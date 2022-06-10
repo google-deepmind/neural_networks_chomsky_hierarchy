@@ -1,21 +1,26 @@
 # neural_networks_chomsky_hierarchy
 
-TODO(b/233718658): Add a description for your new project, explain what is
-being released here, etc... Additional, the following sections are normally
-expected for all releases. Feel free to add additional sections if appropriate
-for your project.
+This repository contains the code associated with the paper "Neural networks and the Chomsky hierarchy" (Deletang et al., 2022).
+
+## Content
+
+There are three folders: tasks, models and training.
+
+'tasks' contains all tasks, organized in their Chomsky hierarchy levels (regular, dcf, ndcf, cs). They all inherit the abstract class GeneralizationTask, defined in tasks/task.py.
+
+'models' contains all the models we use, written in [jax](https://github.com/google/jax) and [haiku](https://github.com/deepmind/dm-haiku), two open source libraries.
+
+'training' contains the code for training models and evaluating them on a wide
+range of lengths. We also included an example to train and evaluate an RNN
+on the Even Pairs task. For training, we use [optax](https://github.com/deepmind/optax) for our optimizers.
 
 ## Installation
 
-Write instructions for how the user should install your code. The instructions
-should ideally be valid when copy-pasted. You can combine this with the Usage
-section if there's no separate installation step.
+`pip install -r requirements.txt`
 
 ## Usage
 
-Write example usage of your code. The instructions should ideally be valid when
-copy-pasted, and will be used by your technical reviewer to verify that your
-package functions correctly.
+`python3 training/example.py`
 
 ## Citing this work
 
