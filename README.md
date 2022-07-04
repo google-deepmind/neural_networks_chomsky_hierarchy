@@ -1,4 +1,4 @@
-# neural_networks_chomsky_hierarchy
+# Neural networks and the Chomsky hierarchy
 
 This repository contains the code associated with the paper "Neural networks and the Chomsky hierarchy" (Deletang et al., 2022).
 
