@@ -19,6 +19,7 @@ from typing import Callable, Optional
 
 import chex
 import haiku as hk
+import jax
 import jax.nn as jnn
 import jax.numpy as jnp
 

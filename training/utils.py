@@ -16,7 +16,7 @@
 """Provides utility functions for training and evaluation."""
 
 import inspect
-from typing import Any, Callable
+from typing import Callable
 
 import chex
 import haiku as hk
@@ -87,6 +87,60 @@ def make_model_with_empty_targets(
     if single_output:
       output = jnp.squeeze(output, axis=1)
     return output
+
+  def new_model_autoregressive(
+      x: chex.Array,
+      y: chex.Array,
+      sample: bool,
+  ) -> chex.Array:
+    """Returns an autoregressive model if `sample == True and output_size > 1`.
+
+    Args:
+      x: The input sequences of shape (b, t, i), where i is the input size.
+      y: The target sequences of shape (b, t, o), where o is the output size.
+      sample: Whether to evaluate the model using autoregressive decoding.
+    """
+    output_length = generalization_task.output_length(x.shape[1])
+
+    if not sample or output_length == 1:
+      output = model(x, y)
+
+    else:
+
+      def evaluate_model_autoregressively(
+          idx: int,
+          predictions: chex.Array,
+      ) -> chex.Array:
+        """Iteratively evaluates the model based on the previous predictions.
+
+        Args:
+          idx: The index of the target sequence that should be evaluated.
+          predictions: The logits for the predictions up to but not including
+            the index `idx`.
+
+        Returns:
+          The `predictions` array modified only at position `idx` where the
+          logits for index `idx` have been inserted.
+        """
+        one_hot_predictions = jnn.one_hot(
+            jnp.argmax(predictions, axis=-1),
+            num_classes=generalization_task.output_size,
+        )
+        logits = model(x, one_hot_predictions)
+        return predictions.at[:, idx].set(logits[:, idx])
+
+      output = lax.fori_loop(
+          lower=0,
+          upper=output_length,
+          body_fun=evaluate_model_autoregressively,
+          init_val=jnp.empty_like(y))
+
+    if single_output:
+      output = jnp.squeeze(output, axis=1)
+    return output
+
+  if is_autoregressive:
+    return new_model_autoregressive
 
   return new_model
 
