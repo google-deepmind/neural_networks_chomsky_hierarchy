@@ -56,7 +56,7 @@ class FixedCurriculum(Curriculum):
 class UniformCurriculum(Curriculum):
   """A uniform curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Collection[int]):
+  def __init__(self, values: Union[Sequence[int], Set[int]]):
     """Initializes.
 
     Args:
@@ -74,7 +74,7 @@ class UniformCurriculum(Curriculum):
 class ReverseExponentialCurriculum(Curriculum):
   """A reverse exponential curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Collection[int], tau: bool):
+  def __init__(self, values: Union[Sequence[int], Set[int]], tau: bool):
     """Initializes.
 
     Args:
