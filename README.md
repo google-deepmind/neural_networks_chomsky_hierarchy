@@ -43,8 +43,13 @@ It is based on [JAX](https://jax.readthedocs.io) and [Haiku](https://dm-haiku.re
 └── requirements.txt          - Dependencies
 ```
 
-Some files omitted.
+'tasks' contains all tasks, organized in their Chomsky hierarchy levels (regular, dcf, cs). They all inherit the abstract class GeneralizationTask, defined in tasks/task.py.
 
+'models' contains all the models we use, written in [jax](https://github.com/google/jax) and [haiku](https://github.com/deepmind/dm-haiku), two open source libraries.
+
+'training' contains the code for training models and evaluating them on a wide
+range of lengths. We also included an example to train and evaluate an RNN
+on the Even Pairs task. We use [optax](https://github.com/deepmind/optax) for our optimizers.
 
 ## Installation
 

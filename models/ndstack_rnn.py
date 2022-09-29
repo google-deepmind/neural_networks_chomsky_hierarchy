@@ -51,7 +51,6 @@ the same) and x2 is the value to push. For pop, it is a function of the form
 stack or not. No value should be passed there however. The functions are
 modelled by transition matrices of shape (Q, S, Q, S) where Q=#states and
 S=#symbols.
-
 Once the action matrices are passed, the graph is updated. The update is done
 via an internal transition matrix called gamma. This matrix is simple for the
 push action (one can only push on the top of the stack, ie nodes for which t =
@@ -76,8 +75,9 @@ Notations:
   B: Batch size.
 """
 
-from typing import Any, Mapping, Optional, Tuple, Type, NamedTuple
+from typing import Any, Mapping, NamedTuple, Optional, Tuple, Type
 
+import chex
 import haiku as hk
 import jax
 import jax.nn as jnn
@@ -91,14 +91,15 @@ class NDStack(NamedTuple):
 
   Note that alpha and top_stack depend on gamma.
   """
-  gamma: jnp.ndarray  # Shape (B, T, T, Q, S, Q, S)
-  alpha: jnp.ndarray  # Shape (B, T, Q, S)
-  top_stack: jnp.ndarray  # Shape (B, S)
+  gamma: chex.Array  # Shape (B, T, T, Q, S, Q, S)
+  alpha: chex.Array  # Shape (B, T, Q, S)
+  top_stack: chex.Array  # Shape (B, S)
 
 
 def _update_stack(ndstack: NDStack,
-                  push_actions: jnp.ndarray,
-                  pop_actions: jnp.ndarray,
+                  push_actions: chex.Array,
+                  pop_actions: chex.Array,
+                  replace_actions: chex.Array,
                   timestep: int,
                   read_states: bool = True) -> NDStack:
   """Returns an updated NDStack.
@@ -108,13 +109,16 @@ def _update_stack(ndstack: NDStack,
       non-deterministic stack.
     push_actions: A tensor of shape (B, Q, S, Q, S).
     pop_actions: A tensor of shape (B, Q, S, Q).
+    replace_actions: A tensor of shape (B, Q, S, Q, S).
     timestep: The current timestep while processing the sequence.
     read_states: Whether to read the state of the NPDA as well.
   """
   stack_size = ndstack.gamma.shape[2]
   mask = jnp.zeros((stack_size, stack_size))
   mask = mask.at[timestep - 1, timestep].set(1)
-  new_push_gamma = jnp.einsum('bqxry,tT->btTqxry', push_actions, mask)
+  new_push_gamma_t = jnp.einsum('bqxry,tT->btTqxry', push_actions,
+                                mask)[:, :, timestep]
+
   index_k = jnp.stack([jnp.arange(start=0, stop=stack_size)] * stack_size)
   index_i = jnp.transpose(index_k)
   timestep_arr = jnp.full((stack_size, stack_size), timestep)
@@ -127,9 +131,13 @@ def _update_stack(ndstack: NDStack,
       ndstack.gamma[:, :, timestep - 1],
       pop_actions,
   )
-  new_pop_gamma = jax.vmap(jax.vmap(lambda x, y: x.at[timestep].set(y)))(
-      ndstack.gamma, new_pop_gamma_t)
-  new_gamma = new_push_gamma + new_pop_gamma
+
+  new_replace_gamma_t = jnp.einsum('biqxsz,bszry->biqxry',
+                                   ndstack.gamma[:, :,
+                                                 timestep - 1], replace_actions)
+
+  new_gamma = jax.vmap(jax.vmap(lambda x, y: x.at[timestep].set(y)))(
+      ndstack.gamma, new_replace_gamma_t + new_pop_gamma_t + new_push_gamma_t)
 
   alpha_t = jnp.einsum('biqx,biqxry->bry', ndstack.alpha, new_gamma[:, :,
                                                                     timestep])
@@ -141,13 +149,14 @@ def _update_stack(ndstack: NDStack,
     obs = jnp.reshape(alpha_t, (batch_size, states * symbols))
   else:
     obs = jnp.sum(alpha_t, axis=1)
-  new_top_stack = obs / (jnp.sum(obs, axis=-1, keepdims=True) + _EPSILON)
-  return NDStack(new_gamma, new_alpha, new_top_stack)
+
+  obs = obs / (jnp.sum(obs, axis=-1, keepdims=True) + _EPSILON)
+  return NDStack(new_gamma, new_alpha, top_stack=obs)
 
 
 # First element is the NDStack, second is the current timestep, third is the
 # hidden internal state.
-_NDStackRnnState = Tuple[NDStack, jnp.ndarray, jnp.ndarray]
+_NDStackRnnState = Tuple[NDStack, chex.Array, chex.Array]
 
 
 class NDStackRNNCore(hk.RNNCore):
@@ -158,7 +167,6 @@ class NDStackRNNCore(hk.RNNCore):
                stack_states: int,
                stack_size: int = 30,
                inner_core: Type[hk.RNNCore] = hk.VanillaRNN,
-               normalize_actions: bool = True,
                read_states: bool = False,
                name: Optional[str] = None,
                **inner_core_kwargs: Mapping[str, Any]):
@@ -172,8 +180,6 @@ class NDStackRNNCore(hk.RNNCore):
       stack_size: The total size of the stacks. Be careful when increasing this
         value since the computation is in O(stack_size ^ 3).
       inner_core: The inner RNN core builder.
-      normalize_actions: Whether to 'normalize' the actions into a probability
-        distributions using a softmax.
       read_states: Whether to read the states on the NPDA or only the top of the
         stack.
       name: See base class.
@@ -186,11 +192,10 @@ class NDStackRNNCore(hk.RNNCore):
     self._stack_states = stack_states
     self._stack_size = stack_size
     self._read_states = read_states
-    self._normalize_actions = normalize_actions
 
   def __call__(
-      self, inputs: jnp.ndarray,
-      prev_state: _NDStackRnnState) -> Tuple[jnp.ndarray, _NDStackRnnState]:
+      self, inputs: chex.Array,
+      prev_state: _NDStackRnnState) -> Tuple[chex.Array, _NDStackRnnState]:
     """Steps the non-deterministic stack RNN core.
 
     See base class docstring.
@@ -215,22 +220,31 @@ class NDStackRNNCore(hk.RNNCore):
 
     n_push_actions = (self._stack_states * self._stack_symbols)**2
     n_pop_actions = self._stack_states**2 * self._stack_symbols
-    actions = hk.Linear(n_push_actions + n_pop_actions)(new_core_output)
-    if self._normalize_actions:
-      actions = jnn.softmax(actions, axis=-1)
+    n_replace_actions = (self._stack_states * self._stack_symbols)**2
+    actions = hk.Linear(n_push_actions + n_pop_actions + n_replace_actions)(
+        new_core_output)
+    actions = jnn.softmax(actions, axis=-1)
+
     push_actions = jnp.reshape(
         actions[:, :n_push_actions],
         (batch_size, self._stack_states, self._stack_symbols,
          self._stack_states, self._stack_symbols))
 
-    pop_actions = jnp.reshape(actions[:, n_push_actions:],
-                              (batch_size, self._stack_states,
-                               self._stack_symbols, self._stack_states))
+    pop_actions = jnp.reshape(
+        actions[:, n_push_actions:n_push_actions + n_pop_actions],
+        (batch_size, self._stack_states, self._stack_symbols,
+         self._stack_states))
+
+    replace_actions = jnp.reshape(
+        actions[:, -n_replace_actions:],
+        (batch_size, self._stack_states, self._stack_symbols,
+         self._stack_states, self._stack_symbols))
 
     new_ndstack = _update_stack(
         ndstack,
         push_actions,
-        pop_actions, (timestep + 1)[0],
+        pop_actions,
+        replace_actions, (timestep + 1)[0],
         read_states=self._read_states)
     return new_core_output, (new_ndstack, timestep + 1, new_core_state)
 

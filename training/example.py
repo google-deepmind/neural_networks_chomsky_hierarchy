@@ -32,31 +32,26 @@ def main(unused_argv) -> None:
   # architectures.
   batch_size = 128
   sequence_length = 40
-  validation_sequence_length = 50  # Only used as a hint of performance.
   task = 'even_pairs'
-  architecture = 'lstm'
-  architecture_params = {'hidden_size': 256}
+  architecture = 'tape_rnn'
+  architecture_params = {
+      'hidden_size': 256, 'memory_cell_size': 8, 'memory_size': 40}
 
   # Create the task.
   curriculum = curriculum_lib.UniformCurriculum(
       values=list(range(1, sequence_length + 1)))
-  task = constants.TASK_BUILDERS[task](
-      training_data_seed=0,
-      training_curriculum=curriculum,
-      training_batch_size=batch_size,
-      validation_data_seed=0,
-      validation_sequence_length=validation_sequence_length,
-      validation_batch_size=batch_size,
-      pad_sequences_to=None)
+  task = constants.TASK_BUILDERS[task]()
 
   # Create the model.
+  is_autoregressive = (architecture == 'transformer')
   model = constants.MODEL_BUILDERS[architecture](
       output_size=task.output_size,
       return_all_outputs=True,
       **architecture_params)
   model = utils.wrap_model_with_pad(
       model=model, generalization_task=task,
-      computation_steps_mult=0, single_output=True)
+      computation_steps_mult=0, single_output=True,
+      is_autoregressive=is_autoregressive)
   model = hk.transform(model)
 
   # Create the loss and accuracy based on the pointwise ones.
@@ -73,26 +68,27 @@ def main(unused_argv) -> None:
       seed=0,
       model_init_seed=0,
       training_steps=10_000,
-      eval_frequency=200,
-      training_dataset=task.training_dataset,
-      validation_dataset=task.validation_dataset,
-      sample_batch=task.sample_batch,
+      log_frequency=100,
+      length_curriculum=curriculum,
+      batch_size=batch_size,
+      task=task,
       model=model,
       loss_fn=loss_fn,
       learning_rate=1e-3,
       l2_weight=0.,
       accuracy_fn=accuracy_fn,
       compute_full_range_test=True,
-      max_range_test_length=500,
+      max_range_test_length=100,
       range_test_total_batch_size=512,
-      range_test_sub_batch_size=64)
+      range_test_sub_batch_size=64,
+      is_autoregressive=is_autoregressive)
 
-  _, eval_results, _ = training.loop(
-      training_params, use_tqdm=True)
+  training_worker = training.TrainingWorker(training_params, use_tqdm=True)
+  _, eval_results, _ = training_worker.run()
 
   # Gather results and print final score.
   accuracies = [r['accuracy'] for r in eval_results]
-  score = np.mean(accuracies[validation_sequence_length + 1:])
+  score = np.mean(accuracies[sequence_length + 1:])
   print(f'Network score: {score}')
 
 

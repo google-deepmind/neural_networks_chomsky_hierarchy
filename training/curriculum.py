@@ -21,7 +21,8 @@ every 50k steps.
 """
 
 import abc
-from typing import Collection
+import random
+from typing import Sequence, Set, Union
 
 import numpy as np
 
@@ -29,16 +30,9 @@ import numpy as np
 class Curriculum(abc.ABC):
   """Curriculum to sample lengths."""
 
-  def __init__(self):
-    self._random_state = np.random.RandomState()
-
   @abc.abstractmethod
   def sample_sequence_length(self, step: int) -> int:
     """Samples a sequence length from the current distribution."""
-
-  def set_seed(self, seed: int):
-    """Sets the seed of the internal random state."""
-    self._random_state.seed(seed)
 
 
 class FixedCurriculum(Curriculum):
@@ -62,25 +56,25 @@ class FixedCurriculum(Curriculum):
 class UniformCurriculum(Curriculum):
   """A uniform curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Collection[int]):
+  def __init__(self, values: Union[Sequence[int], Set[int]]):
     """Initializes.
 
     Args:
       values: The sequence lengths to sample.
     """
     super().__init__()
-    self._values = values
+    self._values = list(values)
 
   def sample_sequence_length(self, step: int) -> int:
     """Returns a sequence length sampled from a uniform distribution."""
     del step
-    return self._random_state.choice(self._values)
+    return random.choice(self._values)
 
 
 class ReverseExponentialCurriculum(Curriculum):
   """A reverse exponential curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Collection[int], tau: bool):
+  def __init__(self, values: Union[Sequence[int], Set[int]], tau: bool):
     """Initializes.
 
     Args:
@@ -88,7 +82,7 @@ class ReverseExponentialCurriculum(Curriculum):
       tau: The exponential rate to use.
     """
     super().__init__()
-    self._values = values
+    self._values = list(values)
     self._tau = tau
 
   def sample_sequence_length(self, step: int) -> int:
@@ -96,7 +90,7 @@ class ReverseExponentialCurriculum(Curriculum):
     del step
     probs = self._tau**np.array(self._values)
     probs = np.array(probs, dtype=np.float32)
-    probs /= np.sum(probs)
+    probs = probs / np.sum(probs)
     return np.random.choice(self._values, p=probs)
 
 

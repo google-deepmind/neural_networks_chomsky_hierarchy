@@ -18,7 +18,6 @@
 import collections
 from typing import Mapping, Tuple, Dict, Sequence
 
-from absl import logging
 import jax.nn as jnn
 import jax.numpy as jnp
 import numpy as np
@@ -122,10 +121,15 @@ class SolveEquation(task.GeneralizationTask):
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
                    length: int) -> Mapping[str, jnp.ndarray]:
     """Returns a batch of inputs/outputs."""
-    if length < 3:  # No sequence smaller than 3.
-      logging.warning('The length of the sequence can\'t be smaller than 3 in '
-                      'the solve equation task. Length forced to 3.')
-      length = 3
+    if length < 3:
+      return {
+          'input':
+              jnn.one_hot(
+                  jnp.zeros((batch_size, length)), num_classes=self.input_size),
+          'output':
+              jnn.one_hot(
+                  jnp.zeros((batch_size,)), num_classes=self.output_size)
+      }
     batch = generate_raw_dataset(
         batch_size, lengths=[length], modulus=self._modulus)[length]
     inputs = jnn.one_hot(batch['equations'], self.input_size)

@@ -15,43 +15,43 @@
 
 """Manipulate an input stack, using the input actions."""
 
-from typing import Mapping, Tuple, List
+from typing import List, Mapping, Tuple
 
+import chex
 import jax.nn as jnn
 import jax.numpy as jnp
 import numpy as np
 
 from neural_networks_chomsky_hierarchy.tasks import task
 
-ACTIONS = {'POP': 0, 'PUSH': 1}
-
 
 class StackManipulation(task.GeneralizationTask):
-  """A task which goal is to follow instructions and return the end stack.
+  """A task with the goal of following instructions and returning the end stack.
 
-  The input is composed of a stack of 0s and 1s, followed by a sequence of
-  instructions POP/PUSH (represented by 2s and 3s). Note that the stack is given
-  bottom to top.The agent needs to simply follow the instructions given and
-  output the final stack, written from bottom to top. Note that the PUSH
-  instruction means specifically to push a 1 to the stack.
-  The output is padded with 0s to match the input length, and the end of the
-  result is denoted with a termination symbol (i.e., the output has values in
-  {0, 1, 2}).
+  The input is composed of a stack of 0s and 1s followed by a sequence of
+  instructions POP/PUSH 0/PUSH 1 (represented by 2s/3s/4s). The input stack is
+  given bottom-to-top, and the agent needs to execute the instructions given
+  (left-to-rigth) and output the final stack top-to-bottom (i.e., as if it were
+  popping the final stack). If a POP action is to be called on an empty stack,
+  the action is ignored. The output is padded with 0s to match the input length
+  + 1 (to accommodate for the termination token), and the end of the final stack
+  is denoted with the termination symbol 2 (i.e., the output has values in {0,
+  1, 2}).
 
   Examples:
-    0 1 0 0 PUSH POP POP
-      initial 0 0 1 0  (remember it's given reversed)
-      PUSH    1 0 0 1 0
-      POP     0 0 1 0
-      POP     0 1 0
-    -> 0 1 0 2
+    0 1 1 0 PUSH 1 POP POP
+      initial 0 1 1 0       (the stack is received bottom-to-top)
+      PUSH 1  0 1 1 0 1
+      POP     0 1 1 0
+      POP     0 1 1
+    -> 1 1 0 2 0 0 0 0      (the stack is returned top-to-bottom)
 
     1 1 0 POP POP POP
-      initial 0 1 1
+      initial 1 1 0
       POP     1 1
       POP     1
       POP
-    -> 2 0 0 (empty stack!)
+    -> 2 0 0 0 0 0 0 0      (the stack is empty and padded with zeros)
   """
 
   def _sample_expression_and_result(
@@ -64,31 +64,32 @@ class StackManipulation(task.GeneralizationTask):
     # Initialize the stack content and the actions (POP/PUSH).
     stack_length = np.random.randint(low=1, high=length)
     stack = np.random.randint(low=0, high=2, size=(stack_length,))
-    actions = np.random.randint(low=0, high=2, size=(length - stack_length,))
+    actions = np.random.randint(low=2, high=5, size=(length - stack_length,))
 
     # Apply the actions on the stack.
-    current_stack = list(stack)[::-1]
+    current_stack = list(stack)
+
     for action in actions:
-      if action == ACTIONS['POP']:  # POP
-        if len(current_stack) > 1:  # Otherwise, do nothing.
-          current_stack.pop(0)
-      elif action == ACTIONS['PUSH']:  # PUSH
-        current_stack = [1] + current_stack
+      if action == 2:  # POP
+        if current_stack:
+          current_stack.pop()
+      elif action in [3, 4]:  # PUSH a 0 (case 3) or a 1 (case 4)
+        current_stack.append(action - 3)
 
-    return np.concatenate([stack, actions + 2]), current_stack
+    return np.concatenate([stack, actions]), current_stack[::-1]
 
-  def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+  def sample_batch(self, rng: chex.PRNGKey, batch_size: int,
+                   length: int) -> Mapping[str, chex.Array]:
     """Returns a batch of strings and the expected class."""
     expressions, results = [], []
     for _ in range(batch_size):
       expression, result = self._sample_expression_and_result(length)
       expressions.append(expression)
       # Append the termination token to the result.
-      result.append(self.output_size - 1)
+      result += [self.output_size - 1]
       # Pad the result with zeros to match the input length (accounting for the
       # termination token).
-      result.extend([0] * (length + 1 - len(result)))
+      result += [0] * (length + 1 - len(result))
       results.append(result)
     expressions = jnp.array(expressions)
     results = jnp.array(results)
@@ -101,10 +102,10 @@ class StackManipulation(task.GeneralizationTask):
   def input_size(self) -> int:
     """Returns the input size for the models.
 
-    The value is 4 because we have two possible tokens in the stack, plus two
-    tokens to describe the PUSH and POP actions.
+    The value is 5 because we have two possible tokens in the stack (0, 1), plus
+    three tokens to describe the PUSH 0, PUSH 1, and POP actions.
     """
-    return 4
+    return 5
 
   @property
   def output_size(self) -> int:
@@ -115,7 +116,7 @@ class StackManipulation(task.GeneralizationTask):
     """Returns the output length of the task."""
     return input_length + 1
 
-  def accuracy_mask(self, target: jnp.ndarray) -> jnp.ndarray:
+  def accuracy_mask(self, target: chex.Array) -> chex.Array:
     """Computes mask that ignores everything after the termination tokens.
 
     Args:
