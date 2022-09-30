@@ -21,7 +21,7 @@ simulate the full CF grammar, non-jittable.
 """
 
 import functools
-from typing import Mapping, Optional, Sequence
+from typing import Optional, Sequence
 
 import jax
 import jax.nn as jnn
@@ -159,7 +159,7 @@ class ModularArithmetic(task.GeneralizationTask):
       rng: jnp.ndarray,
       batch_size: int,
       sequence_length: int,
-  ) -> Mapping[str, jnp.ndarray]:
+  ) -> task.Batch:
     """Returns a batch of modular arithmetic expressions and their labels.
 
     Args:

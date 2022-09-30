@@ -16,7 +16,6 @@
 """Missing duplicate string task for generalization."""
 
 import functools
-from typing import Mapping
 
 import chex
 import jax
@@ -48,7 +47,7 @@ class MissingDuplicateString(task.GeneralizationTask):
       rng: chex.PRNGKey,
       batch_size: int,
       length: int,
-  ) -> Mapping[str, chex.Array]:
+  ) -> task.Batch:
     """Returns a batch of strings and the expected class."""
     # For `length == 1`, we cannot meaningfully define substrings of length
     # `length // 2`, so we arbitrarily set the inputs and outputs to `1`.

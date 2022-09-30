@@ -16,7 +16,7 @@
 """Solve equation task for generalization."""
 
 import collections
-from typing import Mapping, Tuple, Dict, Sequence
+from typing import Tuple, Dict, Sequence
 
 import jax.nn as jnn
 import jax.numpy as jnp
@@ -119,7 +119,7 @@ class SolveEquation(task.GeneralizationTask):
     self._modulus = modulus
 
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+                   length: int) -> task.Batch:
     """Returns a batch of inputs/outputs."""
     if length < 3:
       return {

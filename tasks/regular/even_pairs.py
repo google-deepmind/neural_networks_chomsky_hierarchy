@@ -16,7 +16,6 @@
 """Compute whether the number of 01's and 10's is even."""
 
 import functools
-from typing import Mapping
 
 import jax
 from jax import nn as jnn
@@ -41,7 +40,7 @@ class EvenPairs(task.GeneralizationTask):
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+                   length: int) -> task.Batch:
     """Returns a batch of strings and the expected class."""
     strings = jrandom.randint(
         rng,

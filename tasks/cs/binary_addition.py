@@ -16,7 +16,7 @@
 """Binary addition task for generalization."""
 
 import random
-from typing import List, Mapping, Sequence, Tuple
+from typing import List, Sequence, Tuple
 
 import chex
 import jax.nn as jnn
@@ -145,7 +145,7 @@ class BinaryAddition(task.GeneralizationTask):
       rng: chex.PRNGKey,
       batch_size: int,
       length: int,
-  ) -> Mapping[str, chex.Array]:
+  ) -> task.Batch:
     """Returns a batch of binary additions and their results."""
     del rng
 

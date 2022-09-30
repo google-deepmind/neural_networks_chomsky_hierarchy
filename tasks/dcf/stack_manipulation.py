@@ -15,7 +15,7 @@
 
 """Manipulate an input stack, using the input actions."""
 
-from typing import List, Mapping, Tuple
+from typing import List, Tuple
 
 import chex
 import jax.nn as jnn
@@ -79,7 +79,7 @@ class StackManipulation(task.GeneralizationTask):
     return np.concatenate([stack, actions]), current_stack[::-1]
 
   def sample_batch(self, rng: chex.PRNGKey, batch_size: int,
-                   length: int) -> Mapping[str, chex.Array]:
+                   length: int) -> task.Batch:
     """Returns a batch of strings and the expected class."""
     expressions, results = [], []
     for _ in range(batch_size):

@@ -16,7 +16,6 @@
 """Odds first task for generalization."""
 
 import functools
-from typing import Mapping
 
 import jax
 import jax.nn as jnn
@@ -55,7 +54,7 @@ class OddsFirst(task.GeneralizationTask):
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+                   length: int) -> task.Batch:
     """Returns a batch of strings and their outputs."""
     strings = jrandom.randint(
         rng, shape=(batch_size, length), minval=0, maxval=self._vocab_size)

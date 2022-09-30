@@ -16,11 +16,11 @@
 """Compute the reverse of an input string."""
 
 import functools
-from typing import Mapping
 
 import jax
 import jax.numpy as jnp
 
+from neural_networks_chomsky_hierarchy.tasks import task
 from neural_networks_chomsky_hierarchy.tasks.cs import duplicate_string
 
 
@@ -40,7 +40,7 @@ class ReverseString(duplicate_string.DuplicateString):
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+                   length: int) -> task.Batch:
     """Returns a batch of strings and their reversed version."""
     batch = super().sample_batch(rng, batch_size, length)
     batch['output'] = jnp.flip(batch['input'], axis=1)

@@ -16,7 +16,6 @@
 """Bucket sort task for generalization."""
 
 import functools
-from typing import Mapping
 
 import chex
 import jax
@@ -56,7 +55,7 @@ class BucketSort(task.GeneralizationTask):
       rng: chex.PRNGKey,
       batch_size: int,
       length: int,
-  ) -> Mapping[str, chex.Array]:
+  ) -> task.Batch:
     """Returns a batch of strings and tokens sorted by (inc.) occurrence."""
     strings = jrandom.randint(
         rng, shape=(batch_size, length), minval=0, maxval=self._vocab_size)

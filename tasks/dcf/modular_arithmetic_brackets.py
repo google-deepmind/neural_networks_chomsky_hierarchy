@@ -16,7 +16,7 @@
 """Modular arithmetic task, with brackets."""
 
 import collections
-from typing import Tuple, Mapping, Dict, Sequence
+from typing import Tuple, Dict, Sequence
 
 import jax.nn as jnn
 import jax.numpy as jnp
@@ -148,7 +148,7 @@ class ModularArithmeticBrackets(task.GeneralizationTask):
     self._mult = mult
 
   def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+                   length: int) -> task.Batch:
     """Returns a batch of inputs/outputs."""
     del rng
     batch = generate_raw_dataset(

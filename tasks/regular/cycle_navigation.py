@@ -16,7 +16,6 @@
 """Compute the final state after randomly walking on a circle."""
 
 import functools
-from typing import Mapping
 
 import chex
 import jax
@@ -51,7 +50,7 @@ class CycleNavigation(task.GeneralizationTask):
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
   def sample_batch(self, rng: chex.PRNGKey, batch_size: int,
-                   length: int) -> Mapping[str, chex.Array]:
+                   length: int) -> task.Batch:
     """Returns a batch of strings and the expected class."""
     actions = jrandom.randint(
         rng, shape=(batch_size, length), minval=0, maxval=3)
