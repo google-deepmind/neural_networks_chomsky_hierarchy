@@ -28,8 +28,8 @@ from neural_networks_chomsky_hierarchy.training import utils
 
 
 def main(unused_argv) -> None:
-  # Change your hyperparameters here. See constants.py for possible tasks and
-  # architectures.
+  # Change your hyperparameters here. See constants.py for possible tasks and
+  # architectures.
   batch_size = 128
   sequence_length = 40
   task = 'even_pairs'
@@ -43,15 +43,23 @@ def main(unused_argv) -> None:
   task = constants.TASK_BUILDERS[task]()
 
   # Create the model.
-  is_autoregressive = (architecture == 'transformer')
+  is_autoregressive = False
+  computation_steps_mult = 0
+  single_output = task.output_length(10) == 1
   model = constants.MODEL_BUILDERS[architecture](
       output_size=task.output_size,
       return_all_outputs=True,
       **architecture_params)
-  model = utils.wrap_model_with_pad(
-      model=model, generalization_task=task,
-      computation_steps_mult=0, single_output=True,
-      is_autoregressive=is_autoregressive)
+  if is_autoregressive:
+    if 'transformer' not in architecture:
+      model = utils.make_model_with_targets_as_input(
+          model, computation_steps_mult
+      )
+    model = utils.add_sampling_to_autoregressive_model(model, single_output)
+  else:
+    model = utils.make_model_with_empty_targets(
+        model, task, computation_steps_mult, single_output
+    )
   model = hk.transform(model)
 
   # Create the loss and accuracy based on the pointwise ones.

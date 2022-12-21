@@ -16,10 +16,10 @@
 """Provides utility functions for training and evaluation."""
 
 import inspect
-from typing import Callable
+from typing import Any, Callable
 
 import chex
-from jax import lax
+import haiku as hk
 from jax import nn as jnn
 from jax import numpy as jnp
 
@@ -27,119 +27,144 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 COMPUTATION_EMPTY_TOKEN = 0
 OUTPUT_EMPTY_TOKEN = 1
-DELIMITER_TOKEN = 2
 
 
-def pad_input_tape(
-    input_tape: chex.Array,
+def make_model_with_empty_targets(
+    model: Callable[[chex.Array], chex.Array],
     generalization_task: task.GeneralizationTask,
-    use_delimiters: bool = False,
-    computation_steps_mult: int = 0,
-) -> chex.Array:
-  """Pads the input tape to account for the task's output length.
-
-  For a given input tape `input_tape` of vocabulary size `vocab_sizes`, the
-  padded tape will have the format [`delimiter_symbol`, `input_tape`,
-  `empty_tape`, `delimiter_symbol`], where the empty tape corresponds to token
-  `vocab_size + 1` and the `delimiter_symbol` corresponds to token `vocab_size +
-  2`. The `empty_tape` has the same length as the task output.
-
-  Args:
-    input_tape: Input tokens of shape `(batch_size, input_length, input_size)`.
-    generalization_task: The task that we train on.
-    use_delimiters: Whether to use delimiter symbols on the tape.
-    computation_steps_mult: The amount of empty cells to append to the input
-      tape. This variable is a multiplier and the actual number of cell is
-      computation_steps_mult * input_length.
-
-  Returns:
-    The padded sequence.
-  """
-  batch_size, input_length, input_size = input_tape.shape
-  output_length = generalization_task.output_length(input_length)
-  extra_dims_onehot = 3 if use_delimiters else 2
-
-  # Adding extra zeros to the inputs to let space for the extra tokens.
-  input_tape = jnp.concatenate(
-      [input_tape,
-       jnp.zeros((batch_size, input_length, extra_dims_onehot))],
-      axis=-1)
-
-  if computation_steps_mult > 0:
-    # We create the portion of the tape used for computation. It contains a
-    # first type of empty symbols.
-    computation_tape = jnp.full(
-        (batch_size, computation_steps_mult * input_length),
-        fill_value=input_size + COMPUTATION_EMPTY_TOKEN)
-    computation_tape = jnn.one_hot(
-        computation_tape, num_classes=input_size + extra_dims_onehot)
-    input_tape = jnp.concatenate([input_tape, computation_tape], axis=1)
-
-  # Here we create the portion of the tape used to retrieve the output after
-  # computation. It contains a second type of empty symbols.
-  output_tape = jnp.full((batch_size, output_length),
-                         fill_value=input_size + OUTPUT_EMPTY_TOKEN)
-  output_tape = jnn.one_hot(
-      output_tape, num_classes=input_size + extra_dims_onehot)
-  input_tape = jnp.concatenate([input_tape, output_tape], axis=1)
-
-  if use_delimiters:
-    # We add the delimiter symbol to the beginning and the end of the tape.
-    delimiter_symbol = jnp.full((batch_size, 1),
-                                fill_value=input_size + DELIMITER_TOKEN)
-    delimiter_symbol = jnn.one_hot(
-        delimiter_symbol, num_classes=input_size + extra_dims_onehot)
-    input_tape = jnp.concatenate(
-        [delimiter_symbol, input_tape, delimiter_symbol], axis=1)
-  return input_tape
-
-
-def wrap_model_with_pad(
-    model: Callable[..., chex.Array],
-    generalization_task: task.GeneralizationTask,
-    use_delimiters: bool = False,
     computation_steps_mult: int = 0,
     single_output: bool = False,
-    is_autoregressive: bool = False,
-) -> Callable[..., chex.Array]:
+) -> Callable[[chex.Array], chex.Array]:
   """Returns a wrapped model that pads the inputs to match the output length.
 
   For a given input tape `input_tape` of vocabulary size `vocab_size`, the
   wrapped model will process a tape of the format
-  [`delimiter_symbol`, `input_tape`, `empty_tape`, `delimiter_symbol`], where
-  the empty tape token is `vocab_size + 1` and the `delimiter_symbol` token is
-  `vocab_size + 2`. The `empty_tape` has the same length as the task output.
+  [`input_tape`, `empty_tape`], where the empty tape token is `vocab_size + 1`.
+  The `empty_tape` has the same length as the task output.
 
   Args:
     model: A model function that converts inputs to outputs.
     generalization_task: The task that we train on.
-    use_delimiters: Whether to use delimiter symbols on the tape.
     computation_steps_mult: The amount of empty cells to append to the input
       tape. This variable is a multiplier and the actual number of cells is
       `computation_steps_mult * input_length`.
     single_output: Whether to return the squeezed tensor of values.
-    is_autoregressive: Whether the model is autoregressive or not.
   """
 
   def new_model(x: chex.Array) -> chex.Array:
-    output_length = generalization_task.output_length(x.shape[1])
-    input_tape = pad_input_tape(x, generalization_task, use_delimiters,
-                                computation_steps_mult)
+    batch_size, input_length, input_size = x.shape
+    output_length = generalization_task.output_length(input_length)
+    extra_dims_onehot = 1 + int(computation_steps_mult > 0)
+    final_input_size = input_size + extra_dims_onehot
+
+    # Add trailing zeros to account for new final_input_size.
+    extra_zeros_x = jnp.zeros(
+        (batch_size, input_length, final_input_size - input_size)
+    )
+    x = jnp.concatenate([x, extra_zeros_x], axis=-1)
+
+    computation_tape = jnp.full(
+        (batch_size, computation_steps_mult * input_length),
+        fill_value=input_size + COMPUTATION_EMPTY_TOKEN)
+    computation_tape = jnn.one_hot(
+        computation_tape, num_classes=final_input_size
+    )
+
+    output_tokens = jnp.full(
+        (batch_size, output_length),
+        fill_value=input_size
+        + OUTPUT_EMPTY_TOKEN
+        - int(computation_steps_mult == 0),
+    )
+    output_tokens = jnn.one_hot(output_tokens, num_classes=final_input_size)
+    final_input = jnp.concatenate([x, computation_tape, output_tokens], axis=1)
 
     if 'input_length' in inspect.getfullargspec(model).args:
-      output = model(input_tape, input_length=x.shape[1])
+      output = model(final_input, input_length=input_length)  # pytype: disable=wrong-keyword-args
     else:
-      output = model(input_tape)
-
-    if use_delimiters:
-      output = output[:, -output_length - 1:-1, :]
-    output = output[:, -output_length:, :]
-
+      output = model(final_input)
+    output = output[:, -output_length:]
     if single_output:
       output = jnp.squeeze(output, axis=1)
     return output
 
-  def new_model_autoregressive(
+  return new_model
+
+
+def make_model_with_targets_as_input(
+    model: Callable[[chex.Array], chex.Array], computation_steps_mult: int = 0
+) -> Callable[[chex.Array, chex.Array], chex.Array]:
+  """Returns a wrapped model that takes the targets as inputs.
+
+  This function is useful for the autoregressive case where we pass the targets
+  as inputs to the model. The final input looks like:
+    [inputs, computation_tokens, output_token, targets]
+
+  Args:
+    model: A haiku model that takes 'x' as input.
+    computation_steps_mult: The amount of computation tokens to append to the
+      input tape. This variable is a multiplier and the actual number of cell is
+      computation_steps_mult * input_length.
+  """
+
+  def new_model(x: chex.Array, y: chex.Array) -> chex.Array:
+    """Returns an output from the inputs and targets.
+
+    Args:
+      x: One-hot input vectors, shape (B, T, input_size).
+      y: One-hot target output vectors, shape (B, T, output_size).
+    """
+    batch_size, input_length, input_size = x.shape
+    _, output_length, output_size = y.shape
+    extra_dims_onehot = 1 + int(computation_steps_mult > 0)
+    final_input_size = max(input_size, output_size) + extra_dims_onehot
+
+    # Add trailing zeros to account for new final_input_size.
+    extra_zeros_x = jnp.zeros(
+        (batch_size, input_length, final_input_size - input_size)
+    )
+    x = jnp.concatenate([x, extra_zeros_x], axis=-1)
+    extra_zeros_y = jnp.zeros(
+        (batch_size, output_length, final_input_size - output_size)
+    )
+    y = jnp.concatenate([y, extra_zeros_y], axis=-1)
+
+    computation_tape = jnp.full(
+        (batch_size, computation_steps_mult * input_length),
+        fill_value=input_size + COMPUTATION_EMPTY_TOKEN,
+    )
+    computation_tape = jnn.one_hot(
+        computation_tape, num_classes=final_input_size
+    )
+
+    output_token = jnp.full(
+        (batch_size, 1),
+        fill_value=input_size
+        + OUTPUT_EMPTY_TOKEN
+        - int(computation_steps_mult == 0),
+    )
+    output_token = jnn.one_hot(output_token, num_classes=final_input_size)
+    final_input = jnp.concatenate(
+        [x, computation_tape, output_token, y], axis=1
+    )
+
+    if 'input_length' in inspect.getfullargspec(model).args:
+      output = model(final_input, input_length=input_length)  # pytype: disable=wrong-keyword-args
+    else:
+      output = model(final_input)
+
+    return output[:, -output_length - 1 : -1]
+
+  return new_model
+
+
+def add_sampling_to_autoregressive_model(
+    model: Callable[[chex.Array, chex.Array], chex.Array],
+    single_output: bool = False,
+) -> Callable[[chex.Array, chex.Array, bool], chex.Array]:
+  """Adds a 'sample' argument to the model, to use autoregressive sampling."""
+
+  def new_model_with_sampling(
       x: chex.Array,
       y: chex.Array,
       sample: bool,
@@ -151,7 +176,8 @@ def wrap_model_with_pad(
       y: The target sequences of shape (b, t, o), where o is the output size.
       sample: Whether to evaluate the model using autoregressive decoding.
     """
-    output_length = generalization_task.output_length(x.shape[1])
+    output_length = 1 if len(y.shape) == 2 else y.shape[1]
+    output_size = y.shape[-1]
 
     if not sample or output_length == 1:
       output = model(x, y)
@@ -175,22 +201,43 @@ def wrap_model_with_pad(
         """
         one_hot_predictions = jnn.one_hot(
             jnp.argmax(predictions, axis=-1),
-            num_classes=generalization_task.output_size,
+            num_classes=output_size,
         )
         logits = model(x, one_hot_predictions)
         return predictions.at[:, idx].set(logits[:, idx])
 
-      output = lax.fori_loop(
+      output = hk.fori_loop(
           lower=0,
           upper=output_length,
           body_fun=evaluate_model_autoregressively,
-          init_val=jnp.empty_like(y))
+          init_val=jnp.empty_like(y),
+      )
 
     if single_output:
       output = jnp.squeeze(output, axis=1)
     return output
 
-  if is_autoregressive:
-    return new_model_autoregressive
+  return new_model_with_sampling
 
-  return new_model
+
+def update_tree_with_new_containers(
+    tree: Any, update_dict: dict[str, Any]
+) -> None:
+  """Updates a dataclass tree in place, adding new containers.
+
+  This method is useful for the nested library to add fields to a tree, for
+  which containers have not been created.
+  For instance, if A is a dataclass with attribute architecture_params, and we
+  want to add the value architecture_params.rnn_model.size, we need to create
+  the container 'rnn_model' inside architecture_params.
+
+  Args:
+    tree: An object with attribute (typically a dataclass).
+    update_dict: A dict of nested updates. See example above.
+  """
+  for key in update_dict:
+    subkeys = key.split('.')
+    if len(subkeys) >= 2:
+      # Example: architecture.params.size
+      for i in range(0, len(subkeys) - 2):
+        getattr(tree, subkeys[i])[subkeys[i + 1]] = {}
