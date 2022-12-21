@@ -128,11 +128,3 @@ TASK_LEVELS = {
     'odds_first': 'cs',
     'bucket_sort': 'cs',
 }
-
-POS_ENC_TABLE = {
-    'NONE': transformer.PositionalEncodings.NONE,
-    'SIN_COS': transformer.PositionalEncodings.SIN_COS,
-    'RELATIVE': transformer.PositionalEncodings.RELATIVE,
-    'ALIBI': transformer.PositionalEncodings.ALIBI,
-    'ROTARY': transformer.PositionalEncodings.ROTARY,
-}
