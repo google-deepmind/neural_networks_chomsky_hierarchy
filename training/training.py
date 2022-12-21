@@ -55,7 +55,6 @@ class ClassicTrainingParams:
   model: hk.Transformed
   loss_fn: Callable[[jnp.ndarray, jnp.ndarray], Tuple[float, _LossMetrics]]
   learning_rate: float
-  l2_weight: float
   test_model: Optional[hk.Transformed] = None
   max_grad_norm: float = 1.
   is_autoregressive: bool = False
