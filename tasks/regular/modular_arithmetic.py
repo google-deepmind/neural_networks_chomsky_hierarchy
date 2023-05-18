@@ -154,8 +154,12 @@ class ModularArithmetic(task.GeneralizationTask):
     self._operators = (OP_BY_CHARACTER[op] for op in operators)
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
-  def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> Mapping[str, jnp.ndarray]:
+  def sample_batch(
+      self,
+      rng: jnp.ndarray,
+      batch_size: int,
+      length: int,
+  ) -> Mapping[str, jnp.ndarray]:
     """Returns a batch of modular arithmetic expressions and their labels.
 
     Args:
