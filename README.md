@@ -29,7 +29,6 @@ It is based on [JAX](https://jax.readthedocs.io) and [Haiku](https://dm-haiku.re
 ├── tasks
 |   ├── cs                    - Context-sensitive tasks
 |   ├── dcf                   - Determinisitc context-free tasks
-|   ├── ndcf                  - Nondeterministic context-free tasks
 |   ├── regular               - Regular tasks
 |   └── task.py               - Abstract GeneralizationTask 
 ├── training
