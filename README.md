@@ -84,7 +84,8 @@ Please see the [JAX documentation](https://github.com/google/jax#installation) f
 
 
 
-## Usage
+
+## Usage Example
 
 Before running any code, make sure to activate the conda environment and set the `PYTHONPATH`:
 ```bash
