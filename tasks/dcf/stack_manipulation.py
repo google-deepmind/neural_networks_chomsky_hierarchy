@@ -15,8 +15,6 @@
 
 """Manipulate an input stack, using the input actions."""
 
-from typing import List, Tuple
-
 import chex
 import jax.nn as jnn
 import jax.numpy as jnp
@@ -55,13 +53,14 @@ class StackManipulation(task.GeneralizationTask):
   """
 
   def _sample_expression_and_result(
-      self, length: int) -> Tuple[np.ndarray, List[int]]:
+      self, length: int
+  ) -> tuple[np.ndarray, list[int]]:
     """Returns an expression with stack instructions, and the result stack."""
     if length == 1:
       value = np.random.randint(low=0, high=2, size=(1,))
       return value, list(value)
 
-    # Initialize the stack content and the actions (POP/PUSH).
+    # Initialize the stack content and the actions (POP/PUSH).
     stack_length = np.random.randint(low=1, high=length)
     stack = np.random.randint(low=0, high=2, size=(stack_length,))
     actions = np.random.randint(low=2, high=5, size=(length - stack_length,))
@@ -87,7 +86,7 @@ class StackManipulation(task.GeneralizationTask):
       expressions.append(expression)
       # Append the termination token to the result.
       result += [self.output_size - 1]
-      # Pad the result with zeros to match the input length (accounting for the
+      # Pad the result with zeros to match the input length (accounting for the
       # termination token).
       result += [0] * (length + 1 - len(result))
       results.append(result)

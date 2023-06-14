@@ -17,7 +17,7 @@
 
 import abc
 import functools
-from typing import Any, List, Optional, Sequence, Tuple, Type
+from typing import Any, Optional, Sequence, Type
 
 import chex
 import haiku as hk
@@ -27,7 +27,7 @@ from jax import numpy as jnp
 
 # The first element is the memory, the second is the hidden internal state, and
 # the third is the input length, necessary for adaptive actions.
-_TapeRNNState = Tuple[chex.Array, chex.Array, chex.Array]
+_TapeRNNState = tuple[chex.Array, chex.Array, chex.Array]
 
 
 class TapeRNNCore(hk.RNNCore, abc.ABC):
@@ -62,8 +62,9 @@ class TapeRNNCore(hk.RNNCore, abc.ABC):
     self._n_tapes = n_tapes
 
   @abc.abstractmethod
-  def _tape_operations(self, eye_memory: chex.Array,
-                       input_length: int) -> List[chex.Array]:
+  def _tape_operations(
+      self, eye_memory: chex.Array, input_length: int
+  ) -> list[chex.Array]:
     """Returns a set of updated memory slots.
 
     An eye matrix is passed and corresponds to the positions of the memory
@@ -83,8 +84,9 @@ class TapeRNNCore(hk.RNNCore, abc.ABC):
   def num_actions(self) -> int:
     """Returns the number of actions which can be taken on the tape."""
 
-  def __call__(self, inputs: chex.Array,
-               prev_state: _TapeRNNState) -> Tuple[chex.Array, _TapeRNNState]:
+  def __call__(
+      self, inputs: chex.Array, prev_state: _TapeRNNState
+  ) -> tuple[chex.Array, _TapeRNNState]:
     """Steps the tape RNN core."""
     memories, old_core_state, input_length = prev_state
 
@@ -165,8 +167,9 @@ class TapeInputLengthJumpCore(TapeRNNCore):
     """Returns the number of actions of the tape."""
     return 5
 
-  def _tape_operations(self, eye_memory: chex.Array,
-                       input_length: int) -> List[chex.Array]:
+  def _tape_operations(
+      self, eye_memory: chex.Array, input_length: int
+  ) -> list[chex.Array]:
     write_stay = eye_memory
     write_left = jnp.roll(eye_memory, shift=-1, axis=0)
     write_right = jnp.roll(eye_memory, shift=1, axis=0)
@@ -175,4 +178,3 @@ class TapeInputLengthJumpCore(TapeRNNCore):
     return [
         write_stay, write_left, write_right, write_jump_left, write_jump_right
     ]
-

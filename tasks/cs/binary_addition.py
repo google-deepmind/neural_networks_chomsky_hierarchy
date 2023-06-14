@@ -16,7 +16,7 @@
 """Binary addition task for generalization."""
 
 import random
-from typing import List, Sequence, Tuple
+from typing import Sequence
 
 import chex
 import jax.nn as jnn
@@ -30,7 +30,7 @@ def numbers_to_variable_length_binary(
     numbers: Sequence[int],
     lengths: Sequence[int],
     little_endian: bool = True,
-) -> List[List[int]]:
+) -> list[list[int]]:
   """Returns the binary notation of a certain length for a sequence of numbers.
 
   Args:
@@ -52,7 +52,7 @@ def numbers_to_fixed_length_binary(
     numbers: Sequence[int],
     length: int,
     little_endian: bool = True,
-) -> List[List[int]]:
+) -> list[list[int]]:
   """Returns the binary notation of a certain length for a sequence of numbers.
 
   Args:
@@ -70,9 +70,9 @@ def numbers_to_fixed_length_binary(
 
 
 def expression_from_numbers(
-    numbers_n: Sequence[List[int]],
-    numbers_m: Sequence[List[int]],
-) -> List[List[int]]:
+    numbers_n: Sequence[list[int]],
+    numbers_m: Sequence[list[int]],
+) -> list[list[int]]:
   """Returns an expression with a placeholder value to denote the operation."""
   return [n + [2] + m for n, m in zip(numbers_n, numbers_m)]
 
@@ -96,7 +96,7 @@ class BinaryAddition(task.GeneralizationTask):
       self,
       batch_size: int,
       length: int,
-  ) -> Tuple[Sequence[List[int]], Sequence[List[int]]]:
+  ) -> tuple[Sequence[list[int]], Sequence[list[int]]]:
     """Samples pairs of numbers and sums them in (little-endian) binary.
 
     We use Python's bignums, which can represent arbitrary-precision integers to

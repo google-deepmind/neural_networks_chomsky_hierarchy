@@ -17,7 +17,7 @@
 
 import dataclasses
 import random
-from typing import Any, List, Mapping, Callable
+from typing import Any, Callable, List, Mapping
 
 from absl import logging
 import haiku as hk
@@ -25,6 +25,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import tqdm
+
 
 _Batch = Mapping[str, jnp.ndarray]
 

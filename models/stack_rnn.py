@@ -25,7 +25,7 @@ only and therefore no RL is required. The stack and state update are just linear
 combinations of the last states and these probabilities.
 """
 
-from typing import Any, Mapping, Optional, Tuple, Type
+from typing import Any, Mapping, Optional, Type
 
 import einshape
 import haiku as hk
@@ -35,7 +35,7 @@ import jax.numpy as jnp
 
 
 # First element is the stacks, second is the hidden internal state.
-_StackRnnState = Tuple[jnp.ndarray, jnp.ndarray]
+_StackRnnState = tuple[jnp.ndarray, jnp.ndarray]
 
 # Number of actions the stack-RNN can take, namely POP, PUSH and NO_OP.
 _NUM_ACTIONS = 3
@@ -139,8 +139,8 @@ class StackRNNCore(hk.RNNCore):
     self._n_stacks = n_stacks
 
   def __call__(
-      self, inputs: jnp.ndarray,
-      prev_state: _StackRnnState) -> Tuple[jnp.ndarray, _StackRnnState]:
+      self, inputs: jnp.ndarray, prev_state: _StackRnnState
+  ) -> tuple[jnp.ndarray, _StackRnnState]:
     """Steps the stack RNN core.
 
     See base class docstring.

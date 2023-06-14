@@ -18,7 +18,7 @@
 import dataclasses
 import functools
 import random
-from typing import Tuple, List, Callable, Mapping, Optional, Any
+from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 import chex
 import haiku as hk

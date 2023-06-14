@@ -16,7 +16,6 @@
 """Example script to train and evaluate a network."""
 
 from absl import app
-
 import haiku as hk
 import jax.numpy as jnp
 import numpy as np

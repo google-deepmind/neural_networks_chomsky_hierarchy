@@ -75,7 +75,7 @@ Notations:
   B: Batch size.
 """
 
-from typing import Any, Mapping, NamedTuple, Optional, Tuple, Type
+from typing import Any, Mapping, NamedTuple, Optional, Type
 
 import chex
 import haiku as hk
@@ -156,7 +156,7 @@ def _update_stack(ndstack: NDStack,
 
 # First element is the NDStack, second is the current timestep, third is the
 # hidden internal state.
-_NDStackRnnState = Tuple[NDStack, chex.Array, chex.Array]
+_NDStackRnnState = tuple[NDStack, chex.Array, chex.Array]
 
 
 class NDStackRNNCore(hk.RNNCore):
@@ -194,8 +194,8 @@ class NDStackRNNCore(hk.RNNCore):
     self._read_states = read_states
 
   def __call__(
-      self, inputs: chex.Array,
-      prev_state: _NDStackRnnState) -> Tuple[chex.Array, _NDStackRnnState]:
+      self, inputs: chex.Array, prev_state: _NDStackRnnState
+  ) -> tuple[chex.Array, _NDStackRnnState]:
     """Steps the non-deterministic stack RNN core.
 
     See base class docstring.

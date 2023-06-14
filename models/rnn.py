@@ -15,7 +15,7 @@
 
 """Builders for RNN/LSTM cores."""
 
-from typing import Callable, Any, Type
+from typing import Any, Callable, Type
 
 import haiku as hk
 import jax.nn as jnn

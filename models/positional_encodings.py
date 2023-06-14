@@ -17,7 +17,7 @@
 
 import enum
 import math
-from typing import Any, Tuple
+from typing import Any
 
 import chex
 import haiku as hk
@@ -328,7 +328,8 @@ def _get_alibi_slopes(num_heads: int) -> list[float]:
 
 
 def compute_alibi_encodings_biases(
-    attention_shape: Tuple[int, ...]) -> chex.Array:
+    attention_shape: tuple[int, ...]
+) -> chex.Array:
   """Returns the biases following the ALiBi method.
 
   This code strictly follows what is described in the ALiBi paper.

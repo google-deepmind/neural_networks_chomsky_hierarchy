@@ -16,7 +16,7 @@
 """Solve equation task for generalization."""
 
 import collections
-from typing import Tuple, Dict, Sequence
+from typing import Sequence
 
 import jax.nn as jnn
 import jax.numpy as jnp
@@ -28,9 +28,9 @@ from neural_networks_chomsky_hierarchy.tasks import task
 from neural_networks_chomsky_hierarchy.tasks.dcf import modular_arithmetic_brackets as mab
 
 
-def generate_equation_and_solution(modulus: int,
-                                   length: int,
-                                   mult: bool = False) -> Tuple[str, int]:
+def generate_equation_and_solution(
+    modulus: int, length: int, mult: bool = False
+) -> tuple[str, int]:
   """Returns a modular arithmetic equation with brackets, and its solution.
 
   The values are in {0, 1, ..., modulus-1}, and the unknown
@@ -66,7 +66,8 @@ def generate_raw_dataset(
     lengths: Sequence[int],
     modulus: int,
     mult: bool = False,
-    with_tqdm: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
+    with_tqdm: bool = False,
+) -> dict[int, dict[str, np.ndarray]]:
   """Generates a dataset of equations and their solutions.
 
   Args:

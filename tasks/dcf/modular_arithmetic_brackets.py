@@ -16,7 +16,7 @@
 """Modular arithmetic task, with brackets."""
 
 import collections
-from typing import Tuple, Dict, Sequence
+from typing import Sequence
 
 import jax.nn as jnn
 import jax.numpy as jnp
@@ -27,9 +27,9 @@ import tree
 from neural_networks_chomsky_hierarchy.tasks import task
 
 
-def generate_one_expression_and_result(modulus: int,
-                                       length: int,
-                                       mult: bool = False) -> Tuple[str, int]:
+def generate_one_expression_and_result(
+    modulus: int, length: int, mult: bool = False
+) -> tuple[str, int]:
   """Returns a modular arithmetic expression with brackets, and its result.
 
   The values in the expression are in {0, 1, ..., modulus-1}. The allowed
@@ -94,7 +94,8 @@ def generate_raw_dataset(
     lengths: Sequence[int],
     modulus: int,
     mult: bool = False,
-    with_tqdm: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
+    with_tqdm: bool = False,
+) -> dict[int, dict[str, np.ndarray]]:
   """Generates a dataset of maths expressions with brackets, and their results.
 
   Args:

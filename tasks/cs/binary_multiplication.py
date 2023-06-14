@@ -16,7 +16,7 @@
 """Binary multiplication task for generalization."""
 
 import random
-from typing import List, Sequence, Tuple
+from typing import Sequence
 
 import chex
 import jax.nn as jnn
@@ -46,7 +46,7 @@ class BinaryMultiplication(task.GeneralizationTask):
       self,
       batch_size: int,
       length: int,
-  ) -> Tuple[Sequence[List[int]], Sequence[List[int]]]:
+  ) -> tuple[Sequence[list[int]], Sequence[list[int]]]:
     """Samples pairs of numbers and multiplies them in (little-endian) binary.
 
     We use Python's bignums, which can represent arbitrary-precision integers to
