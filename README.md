@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/deepmind/neural_networks_chomsky_hierarchy/master/chomsky.svg" alt="Overview figure"/>
 </p>
 
-This repository provides an implementation of the paper [Neural Networks and the Chomsky Hierarchy](https://arxiv.org/abs/2207.02098).
+This repository provides an implementation of our ICLR 2023 paper [Neural Networks and the Chomsky Hierarchy](https://arxiv.org/abs/2207.02098).
 
 > Reliable generalization lies at the heart of safe ML and AI.
 However, understanding when and how neural networks generalize remains one of the most important unsolved problems in the field.
@@ -65,11 +65,21 @@ We use [optax](https://github.com/deepmind/optax) for our optimizers.
 ## Citing This Work
 
 ```bibtex
-@misc{deletang2022neural,
-  author    = {Delétang, Grégoire and Ruoss, Anian and Grau-Moya, Jordi and Genewein, Tim and Wenliang, Li Kevin and Catt, Elliot and Hutter, Marcus and Legg, Shane and Ortega, Pedro A.},
-  title     = {Neural Networks and the Chomsky Hierarchy},
-  publisher = {arXiv},
-  year      = {2022},
+@inproceedings{deletang2023neural,
+  author       = {Gr{\'{e}}goire Del{\'{e}}tang and
+                  Anian Ruoss and
+                  Jordi Grau{-}Moya and
+                  Tim Genewein and
+                  Li Kevin Wenliang and
+                  Elliot Catt and
+                  Chris Cundy and
+                  Marcus Hutter and
+                  Shane Legg and
+                  Joel Veness and
+                  Pedro A. Ortega},
+  title        = {Neural Networks and the Chomsky Hierarchy},
+  booktitle    = {11th International Conference on Learning Representations},
+  year         = {2023},
 }
 ```
 
