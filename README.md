@@ -83,6 +83,7 @@ Note that the jax version must correspond to the existing CUDA installation you 
 Please see the [JAX documentation](https://github.com/google/jax#installation) for more details.
 
 
+
 ## Usage
 
 Before running any code, make sure to activate the conda environment and set the `PYTHONPATH`:
