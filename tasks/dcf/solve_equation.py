@@ -94,8 +94,10 @@ def generate_raw_dataset(
   for x in range(modulus):
     alphabet_to_int[str(x)] = x
 
-  make_default_dict = lambda: {'expressions': [], 'results': []}
-  sequences = collections.defaultdict(make_default_dict)
+  sequences = collections.defaultdict(lambda: {  # pylint: disable=g-long-lambda
+      'equations': [],
+      'solutions': []
+  })
   range_lengths = tqdm.tqdm(lengths) if with_tqdm else lengths
   for length in range_lengths:
     for _ in range(n // len(lengths)):

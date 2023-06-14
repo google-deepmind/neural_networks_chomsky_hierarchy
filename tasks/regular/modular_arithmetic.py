@@ -158,29 +158,29 @@ class ModularArithmetic(task.GeneralizationTask):
       self,
       rng: jnp.ndarray,
       batch_size: int,
-      sequence_length: int,
+      length: int,
   ) -> task.Batch:
     """Returns a batch of modular arithmetic expressions and their labels.
 
     Args:
       rng: The jax random number generator.
       batch_size: The size of the batch returned.
-      sequence_length: The length of the sequence. As this length must be odd
-        for the modular arithmetic dataset, if it's not, we force it to be by
+      length: The length of the sequence. As this length must be odd for the
+        modular arithmetic dataset, if it's not, we force it to be by
         subtracting one to the length passed.
     """
     # Subtracting one to the length if it's not odd already.
-    if sequence_length % 2 != 1:
-      sequence_length -= 1
+    if length % 2 != 1:
+      length -= 1
 
-    batch = jnp.empty((batch_size, sequence_length), dtype=int)
+    batch = jnp.empty((batch_size, length), dtype=int)
     rng1, rng2 = jax.random.split(rng)
     remainders = jax.random.randint(rng1,
-                                    (batch_size, sequence_length // 2 + 1), 0,
+                                    (batch_size, length // 2 + 1), 0,
                                     self._modulus)
     ops = self._modulus + jnp.array(list(self._operators))
 
-    operations = jrandom.choice(rng2, ops, (batch_size, sequence_length // 2))
+    operations = jrandom.choice(rng2, ops, (batch_size, length // 2))
     batch = batch.at[:, ::2].set(remainders)
     expressions = batch.at[:, 1::2].set(operations)
 
