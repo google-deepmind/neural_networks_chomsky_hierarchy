@@ -54,12 +54,47 @@ We use [optax](https://github.com/deepmind/optax) for our optimizers.
 
 ## Installation
 
-`pip install -r requirements.txt`
+Clone the source code into a local directory:
+```bash
+git clone https://github.com/deepmind/neural_networks_chomsky_hierarchy.git
+cd neural_networks_chomsky_hierarchy
+```
+
+`pip install -r requirements.txt` will install all required dependencies.
+This is best done inside a [conda environment](https://www.anaconda.com/).
+To that end, install [Anaconda](https://www.anaconda.com/download#downloads).
+Then, create and activate the conda environment:
+```bash
+conda create --name nnch
+conda activate nnch
+```
+
+Install `pip` and use it to install all the dependencies:
+```bash
+conda install pip
+pip install -r requirements.txt
+```
+
+If you have a GPU available (highly recommended for fast training), then you can install JAX with CUDA support.
+```bash
+pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
+Note that the jax version must correspond to the existing CUDA installation you wish to use (CUDA 12 in the example above).
+Please see the [JAX documentation](https://github.com/google/jax#installation) for more details.
 
 
-## Usage Example
+## Usage
 
-`python3 training/example.py`
+Before running any code, make sure to activate the conda environment and set the `PYTHONPATH`:
+```bash
+conda activate nnch
+export PYTHONPATH=$(pwd)
+```
+
+We provide an example of a training and evaluation run at:
+```bash
+python experiments/example.py
+```
 
 
 ## Citing This Work

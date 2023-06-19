@@ -13,12 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Constants for the generalization project."""
+"""Constants for our length generalization experiments."""
 
 import functools
 
 import haiku as hk
 
+from neural_networks_chomsky_hierarchy.experiments import curriculum as curriculum_lib
 from neural_networks_chomsky_hierarchy.models import ndstack_rnn
 from neural_networks_chomsky_hierarchy.models import rnn
 from neural_networks_chomsky_hierarchy.models import stack_rnn
@@ -39,7 +40,7 @@ from neural_networks_chomsky_hierarchy.tasks.regular import cycle_navigation
 from neural_networks_chomsky_hierarchy.tasks.regular import even_pairs
 from neural_networks_chomsky_hierarchy.tasks.regular import modular_arithmetic
 from neural_networks_chomsky_hierarchy.tasks.regular import parity_check
-from neural_networks_chomsky_hierarchy.training import curriculum as curriculum_lib
+
 
 MODEL_BUILDERS = {
     'rnn':

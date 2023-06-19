@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Duplicate string task for generalization."""
+"""Duplicate a string."""
 
 import functools
 
@@ -26,7 +26,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class DuplicateString(task.GeneralizationTask):
-  """A task which goal is to duplicate a string.
+  """A task with the goal of duplicating a string.
 
   The input is a string s_1 ... s_n composed of symbols from a finite set S. The
   output is the same string outputted twice without any separator, ie:

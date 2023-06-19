@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Binary addition task for generalization."""
+"""Add two binary numbers."""
 
 import random
 from typing import Sequence
@@ -78,7 +78,7 @@ def expression_from_numbers(
 
 
 class BinaryAddition(task.GeneralizationTask):
-  """A task which goal is to sum two numbers in binary (little-endian).
+  """A task with the goal of summing two numbers in binary (little-endian).
 
   The input is a string of the form `first_number+second_number` in
   (little-endian) binary notation (e.g., `01001+011`). The goal of the agent is

@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Missing duplicate string task for generalization."""
+"""Predict the missing symbol in a duplicated string."""
 
 import functools
 
@@ -27,7 +27,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class MissingDuplicateString(task.GeneralizationTask):
-  """A task requiring to predict the missing symbol in a duplicated string.
+  """A task with the goal of finding the missing symbol in a duplicated string.
 
   Given a binary string that is presented twice with exactly one element omitted
   (denoted by the placeholder token `2`), predict the value of that element.

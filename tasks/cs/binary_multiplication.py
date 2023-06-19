@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Binary multiplication task for generalization."""
+"""Multiply two binary numbers."""
 
 import random
 from typing import Sequence
@@ -28,7 +28,7 @@ from neural_networks_chomsky_hierarchy.tasks.cs import binary_addition
 
 
 class BinaryMultiplication(task.GeneralizationTask):
-  """A task which goal is to multiply two numbers in binary (little-endian).
+  """A task with the goal of multiplying two numbers in binary (little-endian).
 
   The input is a string of the form `first_number£second_number` in
   (little-endian) binary notation (e.g., `01001*011`). The goal of the agent is

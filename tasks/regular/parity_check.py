@@ -26,7 +26,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class ParityCheck(task.GeneralizationTask):
-  """A task which goal is to count the number of '1' in a string, modulo 2.
+  """A task with the goal of counting the number of '1' in a string, modulo 2.
 
   The input is a string, composed of 0s and 1s. If the result is even, the class
   is 0, otherwise it's 1.

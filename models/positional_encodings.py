@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Positional encodings, used in transformer.py."""
+"""Positional encodings, used in `transformer.py`."""
 
 import enum
 import math

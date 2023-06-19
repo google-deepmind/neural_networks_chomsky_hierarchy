@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Solve equation task for generalization."""
+"""Solve for the value of an unknown variable in an equation."""
 
 import collections
 from typing import Sequence
@@ -115,7 +115,7 @@ def generate_raw_dataset(
 
 
 class SolveEquation(task.GeneralizationTask):
-  """Solve equation in modular arithmetic."""
+  """A task with the goal of solving an modular equation for an unknown."""
 
   def __init__(self, modulus: int, *args, **kwargs):
     super().__init__(*args, **kwargs)

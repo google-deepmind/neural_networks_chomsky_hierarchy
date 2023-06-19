@@ -26,7 +26,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class EvenPairs(task.GeneralizationTask):
-  """A task which goal is to check whether the number of 01's and 10's is even.
+  """A task with the goal of checking whether the number of 01s and 10s is even.
 
   The input is a binary string, composed of 0s and 1s. If the result is even,
   the class is 0, otherwise it's one.

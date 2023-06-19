@@ -27,7 +27,7 @@ from neural_networks_chomsky_hierarchy.tasks.cs import binary_addition
 
 
 class ComputeSqrt(task.GeneralizationTask):
-  """A task which goal is to compute the square root of a binary number.
+  """A task with the goal of computing the square root of a binary number.
 
   The input is a number in binary (big-endian), and the output is the floor of
   the square root of this number, also in binary.

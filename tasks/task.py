@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Base class for generalization tasks."""
+"""Base class for length generalization tasks."""
 
 import abc
 from typing import TypedDict

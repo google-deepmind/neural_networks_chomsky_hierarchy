@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Bucket sort task for generalization."""
+"""Sort tokens from a fixed alphabet (i.e., bucket sort)."""
 
 import functools
 
@@ -27,7 +27,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class BucketSort(task.GeneralizationTask):
-  """A task which goal is to sort tokens from a fixed alphabet.
+  """A task with the goal of sorting tokens from a fixed alphabet.
 
   The input string is composed of tokens from a fixed-size alphabet, i.e.,
   `{0, 1, ..., vocab_size - 1}`, and the goal is to return the sorted string (in

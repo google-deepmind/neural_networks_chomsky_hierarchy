@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Curriculums for sequence lengths in the generalization project.
+"""Curricula over sequence lengths used to evaluate length generalization.
 
 Allows to sample different sequence lengths along training. For instance,
 one might want to start with length=1 and regularly increase the length by 1,
@@ -21,8 +21,8 @@ every 50k steps.
 """
 
 import abc
+from collections.abc import Collection
 import random
-from typing import Sequence, Set, Union
 
 import numpy as np
 
@@ -56,14 +56,14 @@ class FixedCurriculum(Curriculum):
 class UniformCurriculum(Curriculum):
   """A uniform curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Union[Sequence[int], Set[int]]):
+  def __init__(self, values: Collection[int]):
     """Initializes.
 
     Args:
       values: The sequence lengths to sample.
     """
     super().__init__()
-    self._values = list(values)
+    self._values = tuple(values)
 
   def sample_sequence_length(self, step: int) -> int:
     """Returns a sequence length sampled from a uniform distribution."""
@@ -74,7 +74,7 @@ class UniformCurriculum(Curriculum):
 class ReverseExponentialCurriculum(Curriculum):
   """A reverse exponential curriculum, sampling different sequence lengths."""
 
-  def __init__(self, values: Union[Sequence[int], Set[int]], tau: bool):
+  def __init__(self, values: Collection[int], tau: bool):
     """Initializes.
 
     Args:
@@ -82,7 +82,7 @@ class ReverseExponentialCurriculum(Curriculum):
       tau: The exponential rate to use.
     """
     super().__init__()
-    self._values = list(values)
+    self._values = tuple(values)
     self._tau = tau
 
   def sample_sequence_length(self, step: int) -> int:
@@ -119,6 +119,10 @@ class RegularIncreaseCurriculum(Curriculum):
     """Returns a sequence length from the curriculum with the current step."""
     if not self._sample_all_length:
       return self._initial_sequence_length + self._increase_amount * (
-          step // self._increase_frequency)
-    return self._initial_sequence_length + self._increase_amount * np.random.randint(
-        0, step // self._increase_frequency + 1)
+          step // self._increase_frequency
+      )
+    return (
+        self._initial_sequence_length
+        + self._increase_amount
+        * np.random.randint(0, step // self._increase_frequency + 1)
+    )

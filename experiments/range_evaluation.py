@@ -17,7 +17,7 @@
 
 import dataclasses
 import random
-from typing import Any, Callable, List, Mapping
+from typing import Any, Callable, Mapping
 
 from absl import logging
 import haiku as hk
@@ -49,7 +49,7 @@ class EvaluationParams:
 def range_evaluation(
     eval_params: EvaluationParams,
     use_tqdm: bool = False,
-) -> List[Mapping[str, Any]]:
+) -> list[Mapping[str, Any]]:
   """Evaluates the model on longer, never seen strings and log the results.
 
   Args:

@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Odds first task for generalization."""
+"""Sort a string by the parity of the indices (odd indices first)."""
 
 import functools
 
@@ -26,7 +26,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class OddsFirst(task.GeneralizationTask):
-  """A task which goal is to output the tokens at odd indices of a string first.
+  """A task with the goal of outputting a string's tokens at odd indices first.
 
   The input is a string s_1 ... s_n composed of symbols from a finite set S. The
   output is the same string, but where the values at odd indexes have been put

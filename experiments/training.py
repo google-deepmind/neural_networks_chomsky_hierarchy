@@ -13,12 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Training loop for base generalization experiments."""
+"""Training loop for length generalization experiments."""
 
 import dataclasses
 import functools
 import random
-from typing import Any, Callable, List, Mapping, Optional, Tuple
+from typing import Any, Callable, Mapping, Optional
 
 import chex
 import haiku as hk
@@ -28,13 +28,13 @@ import numpy as np
 import optax
 import tqdm
 
+from neural_networks_chomsky_hierarchy.experiments import curriculum as curriculum_lib
+from neural_networks_chomsky_hierarchy.experiments import range_evaluation
 from neural_networks_chomsky_hierarchy.tasks import task as task_lib
-from neural_networks_chomsky_hierarchy.training import curriculum as curriculum_lib
-from neural_networks_chomsky_hierarchy.training import range_evaluation
 
 
 _LossMetrics = Optional[Mapping[str, jnp.ndarray]]
-_LossFn = Callable[[chex.Array, chex.Array], Tuple[float, _LossMetrics]]
+_LossFn = Callable[[chex.Array, chex.Array], tuple[float, _LossMetrics]]
 _AccuracyFn = Callable[[chex.Array, chex.Array], float]
 _ModelApplyFn = Callable[..., chex.Array]
 _MAX_RNGS_RESERVE = 50000
@@ -53,7 +53,7 @@ class ClassicTrainingParams:
   batch_size: int
 
   model: hk.Transformed
-  loss_fn: Callable[[jnp.ndarray, jnp.ndarray], Tuple[float, _LossMetrics]]
+  loss_fn: Callable[[jnp.ndarray, jnp.ndarray], tuple[float, _LossMetrics]]
   learning_rate: float
   test_model: Optional[hk.Transformed] = None
   max_grad_norm: float = 1.
@@ -76,7 +76,7 @@ def _apply_loss_and_metrics_fn(
     loss_fn: _LossFn,
     accuracy_fn: _AccuracyFn,
     is_autoregressive: bool = False,
-) -> Tuple[float, Tuple[_LossMetrics, float]]:
+) -> tuple[float, tuple[_LossMetrics, float]]:
   """Computes the model output and applies the loss function.
 
   Depending on whether a model is autoregressive or not, it will have a
@@ -131,7 +131,7 @@ def _update_parameters(
     optimizer: optax.GradientTransformation,
     opt_state: optax.OptState,
     is_autoregressive: bool = False,
-) -> Tuple[hk.Params, optax.OptState, Tuple[float, _LossMetrics, float]]:
+) -> tuple[hk.Params, optax.OptState, tuple[float, _LossMetrics, float]]:
   """Applies a single SGD update step to the model parameters.
 
   Args:
@@ -177,9 +177,10 @@ class TrainingWorker:
     self._use_tqdm = use_tqdm
 
   def run(
-      self
-  ) -> Tuple[List[Mapping[str, Any]], Optional[List[Mapping[str, Any]]],
-             chex.ArrayTree]:
+      self,
+  ) -> tuple[
+      list[Mapping[str, Any]], Optional[list[Mapping[str, Any]]], chex.ArrayTree
+  ]:
     """Trains the model with the provided config.
 
     Returns:

@@ -16,48 +16,85 @@
 """Example script to train and evaluate a network."""
 
 from absl import app
+from absl import flags
 import haiku as hk
 import jax.numpy as jnp
 import numpy as np
 
-from neural_networks_chomsky_hierarchy.training import constants
-from neural_networks_chomsky_hierarchy.training import curriculum as curriculum_lib
-from neural_networks_chomsky_hierarchy.training import training
-from neural_networks_chomsky_hierarchy.training import utils
+from neural_networks_chomsky_hierarchy.experiments import constants
+from neural_networks_chomsky_hierarchy.experiments import curriculum as curriculum_lib
+from neural_networks_chomsky_hierarchy.experiments import training
+from neural_networks_chomsky_hierarchy.experiments import utils
+
+_BATCH_SIZE = flags.DEFINE_integer(
+    'batch_size',
+    default=128,
+    help='Training batch size.',
+    lower_bound=1,
+)
+_SEQUENCE_LENGTH = flags.DEFINE_integer(
+    'sequence_length',
+    default=40,
+    help='Maximum training sequence length.',
+    lower_bound=1,
+)
+_TASK = flags.DEFINE_string(
+    'task',
+    default='even_pairs',
+    help='Length generalization task (see `constants.py` for other tasks).',
+)
+_ARCHITECTURE = flags.DEFINE_string(
+    'architecture',
+    default='tape_rnn',
+    help='Model architecture (see `constants.py` for other architectures).',
+)
+
+_IS_AUTOREGRESSIVE = flags.DEFINE_boolean(
+    'is_autoregressive',
+    default=False,
+    help='Whether to use autoregressive sampling or not.',
+)
+_COMPUTATION_STEPS_MULT = flags.DEFINE_integer(
+    'computation_steps_mult',
+    default=0,
+    help=(
+        'The amount of computation tokens to append to the input tape (defined'
+        ' as a multiple of the input length)'
+    ),
+    lower_bound=0,
+)
+# The architecture parameters depend on the architecture, so we cannot define
+# them as via flags. See `constants.py` for the required values.
+_ARCHITECTURE_PARAMS = {
+    'hidden_size': 256,
+    'memory_cell_size': 8,
+    'memory_size': 40,
+}
 
 
 def main(unused_argv) -> None:
-  # Change your hyperparameters here. See constants.py for possible tasks and
-  # architectures.
-  batch_size = 128
-  sequence_length = 40
-  task = 'even_pairs'
-  architecture = 'tape_rnn'
-  architecture_params = {
-      'hidden_size': 256, 'memory_cell_size': 8, 'memory_size': 40}
-
   # Create the task.
   curriculum = curriculum_lib.UniformCurriculum(
-      values=list(range(1, sequence_length + 1)))
-  task = constants.TASK_BUILDERS[task]()
+      values=list(range(1, _SEQUENCE_LENGTH.value + 1))
+  )
+  task = constants.TASK_BUILDERS[_TASK.value]()
 
   # Create the model.
-  is_autoregressive = False
-  computation_steps_mult = 0
   single_output = task.output_length(10) == 1
-  model = constants.MODEL_BUILDERS[architecture](
+  model = constants.MODEL_BUILDERS[_ARCHITECTURE.value](
       output_size=task.output_size,
       return_all_outputs=True,
-      **architecture_params)
-  if is_autoregressive:
-    if 'transformer' not in architecture:
+      **_ARCHITECTURE_PARAMS,
+  )
+  if _IS_AUTOREGRESSIVE.value:
+    if 'transformer' not in _ARCHITECTURE.value:
       model = utils.make_model_with_targets_as_input(
-          model, computation_steps_mult
+          model, _COMPUTATION_STEPS_MULT.value
       )
     model = utils.add_sampling_to_autoregressive_model(model, single_output)
   else:
     model = utils.make_model_with_empty_targets(
-        model, task, computation_steps_mult, single_output
+        model, task, _COMPUTATION_STEPS_MULT.value, single_output
     )
   model = hk.transform(model)
 
@@ -77,7 +114,7 @@ def main(unused_argv) -> None:
       training_steps=10_000,
       log_frequency=100,
       length_curriculum=curriculum,
-      batch_size=batch_size,
+      batch_size=_BATCH_SIZE.value,
       task=task,
       model=model,
       loss_fn=loss_fn,
@@ -87,14 +124,15 @@ def main(unused_argv) -> None:
       max_range_test_length=100,
       range_test_total_batch_size=512,
       range_test_sub_batch_size=64,
-      is_autoregressive=is_autoregressive)
+      is_autoregressive=_IS_AUTOREGRESSIVE.value,
+  )
 
   training_worker = training.TrainingWorker(training_params, use_tqdm=True)
   _, eval_results, _ = training_worker.run()
 
   # Gather results and print final score.
   accuracies = [r['accuracy'] for r in eval_results]
-  score = np.mean(accuracies[sequence_length + 1:])
+  score = np.mean(accuracies[_SEQUENCE_LENGTH.value + 1 :])
   print(f'Network score: {score}')
 
 

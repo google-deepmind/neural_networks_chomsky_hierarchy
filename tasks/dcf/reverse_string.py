@@ -25,7 +25,7 @@ from neural_networks_chomsky_hierarchy.tasks.cs import duplicate_string
 
 
 class ReverseString(duplicate_string.DuplicateString):
-  """A task which goal is to reverse a given string.
+  """A task with the goal of reversing a given string.
 
   The input is a string s_1 ... s_n composed of symbols from a finite set S. The
   output is the string, reversed, ie s_n ... s_1.

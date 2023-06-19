@@ -27,7 +27,7 @@ from neural_networks_chomsky_hierarchy.tasks import task
 
 
 class CycleNavigation(task.GeneralizationTask):
-  """A task which goal is to compute the final state on a circle.
+  """A task with the goal of computing the final state on a circle.
 
   The input is a string of actions, composed of 0s, 1s or -1s. The actions give
   directions to take on a finite length circle (0 is for stay, 1 is for right,

@@ -13,11 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Simple version of the modular arithmetic task.
+"""Modular arithmetic without brackets.
 
-Note this one allows to generate samples using a jittable function, and is
-therefore much faster than its 'brackets' counterpart, which requires to
-simulate the full CF grammar, non-jittable.
+Note this allows to generate samples using a jittable function, and is therefore
+much faster than its 'brackets' counterpart, which requires to simulate the full
+CF grammar, non-jittable.
 """
 
 import functools
@@ -118,7 +118,7 @@ def _evaluate_expression(expression: jnp.ndarray, modulus: int) -> jnp.ndarray:
 
 
 class ModularArithmetic(task.GeneralizationTask):
-  """A task whose goal is to reduce a simple arithmetic expression.
+  """A task with the goal of reducing a simple arithmetic expression.
 
   The input is a string, composed of numbers (in {0, ..., modulus-1}), and
   operators (in {+, -, *}). The output is the reduced value of this expression,

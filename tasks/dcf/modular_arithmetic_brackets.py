@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Modular arithmetic task, with brackets."""
+"""Modular arithmetic with brackets."""
 
 import collections
 from typing import Sequence
@@ -141,7 +141,7 @@ def generate_raw_dataset(
 
 
 class ModularArithmeticBrackets(task.GeneralizationTask):
-  """Task which goal is to give the result of a maths expression, with brackets."""
+  """A task with the goal of reducing an arithmetic expression with brackets."""
 
   def __init__(self, modulus: int, *args, mult: bool = False, **kwargs):
     super().__init__(*args, **kwargs)
