@@ -25,7 +25,7 @@ only and therefore no RL is required. The stack and state update are just linear
 combinations of the last states and these probabilities.
 """
 
-from typing import Any, Mapping, Optional, Type
+from typing import Any, Mapping, Optional
 
 import einshape
 import haiku as hk
@@ -114,13 +114,15 @@ def _update_stack(stack: jnp.ndarray, actions: jnp.ndarray,
 class StackRNNCore(hk.RNNCore):
   """Core for the stack RNN."""
 
-  def __init__(self,
-               stack_cell_size: int,
-               stack_size: int = 30,
-               n_stacks: int = 1,
-               inner_core: Type[hk.RNNCore] = hk.VanillaRNN,
-               name: Optional[str] = None,
-               **inner_core_kwargs: Mapping[str, Any]):
+  def __init__(
+      self,
+      stack_cell_size: int,
+      stack_size: int = 30,
+      n_stacks: int = 1,
+      inner_core: type[hk.RNNCore] = hk.VanillaRNN,
+      name: Optional[str] = None,
+      **inner_core_kwargs: Mapping[str, Any]
+  ):
     """Initializes.
 
     Args:

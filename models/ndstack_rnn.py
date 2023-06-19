@@ -75,7 +75,7 @@ Notations:
   B: Batch size.
 """
 
-from typing import Any, Mapping, NamedTuple, Optional, Type
+from typing import Any, Mapping, NamedTuple, Optional
 
 import chex
 import haiku as hk
@@ -162,14 +162,16 @@ _NDStackRnnState = tuple[NDStack, chex.Array, chex.Array]
 class NDStackRNNCore(hk.RNNCore):
   """Core for the non-deterministic stack RNN."""
 
-  def __init__(self,
-               stack_symbols: int,
-               stack_states: int,
-               stack_size: int = 30,
-               inner_core: Type[hk.RNNCore] = hk.VanillaRNN,
-               read_states: bool = False,
-               name: Optional[str] = None,
-               **inner_core_kwargs: Mapping[str, Any]):
+  def __init__(
+      self,
+      stack_symbols: int,
+      stack_states: int,
+      stack_size: int = 30,
+      inner_core: type[hk.RNNCore] = hk.VanillaRNN,
+      read_states: bool = False,
+      name: Optional[str] = None,
+      **inner_core_kwargs: Mapping[str, Any]
+  ):
     """Initializes.
 
     Args:

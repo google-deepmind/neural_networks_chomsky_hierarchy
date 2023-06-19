@@ -17,7 +17,7 @@
 
 import abc
 import functools
-from typing import Any, Optional, Sequence, Type
+from typing import Any, Optional, Sequence
 
 import chex
 import haiku as hk
@@ -33,14 +33,16 @@ _TapeRNNState = tuple[chex.Array, chex.Array, chex.Array]
 class TapeRNNCore(hk.RNNCore, abc.ABC):
   """Core for the tape RNN."""
 
-  def __init__(self,
-               memory_cell_size: int,
-               memory_size: int = 30,
-               n_tapes: int = 1,
-               mlp_layers_size: Sequence[int] = (64, 64),
-               inner_core: Type[hk.RNNCore] = hk.VanillaRNN,
-               name: Optional[str] = None,
-               **inner_core_kwargs: Any):
+  def __init__(
+      self,
+      memory_cell_size: int,
+      memory_size: int = 30,
+      n_tapes: int = 1,
+      mlp_layers_size: Sequence[int] = (64, 64),
+      inner_core: type[hk.RNNCore] = hk.VanillaRNN,
+      name: Optional[str] = None,
+      **inner_core_kwargs: Any
+  ):
     """Initializes.
 
     Args:

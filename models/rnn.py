@@ -15,7 +15,7 @@
 
 """Builders for RNN/LSTM cores."""
 
-from typing import Any, Callable, Type
+from typing import Any, Callable
 
 import haiku as hk
 import jax.nn as jnn
@@ -26,10 +26,11 @@ from neural_networks_chomsky_hierarchy.models import tape_rnn
 
 def make_rnn(
     output_size: int,
-    rnn_core: Type[hk.RNNCore],
+    rnn_core: type[hk.RNNCore],
     return_all_outputs: bool = False,
     input_window: int = 1,
-    **rnn_kwargs: Any) -> Callable[[jnp.ndarray], jnp.ndarray]:
+    **rnn_kwargs: Any
+) -> Callable[[jnp.ndarray], jnp.ndarray]:
   """Returns an RNN model, not haiku transformed.
 
   Only the last output in the sequence is returned. A linear layer is added to
