@@ -30,8 +30,8 @@ It is based on [JAX](https://jax.readthedocs.io) and [Haiku](https://dm-haiku.re
 |   ├── cs                    - Context-sensitive tasks
 |   ├── dcf                   - Determinisitc context-free tasks
 |   ├── regular               - Regular tasks
-|   └── task.py               - Abstract GeneralizationTask 
-├── training
+|   └── task.py               - Abstract GeneralizationTask
+├── experiments
 |   ├── constants.py          - Training/Evaluation constants
 |   ├── curriculum.py         - Training curricula (over sequence lengths)
 |   ├── example.py            - Example training script (RNN on the Even Pairs task)
@@ -81,7 +81,6 @@ pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-re
 ```
 Note that the jax version must correspond to the existing CUDA installation you wish to use (CUDA 12 in the example above).
 Please see the [JAX documentation](https://github.com/google/jax#installation) for more details.
-
 
 
 ## Usage
