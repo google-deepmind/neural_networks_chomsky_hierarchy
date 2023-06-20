@@ -181,18 +181,21 @@ class MultiHeadDotProductAttention(hk.Module):
 
     # Let b=batch_size, t=seq_len, h=num_heads, and d=num_hiddens_per_head.
     if self._positional_encodings == pos_encs_lib.PositionalEncodings.RELATIVE:
+      # We type hint the params to match the if statement, for pytype.
+      self._positional_encodings_params: pos_encs_lib.RelativeParams
       attention = pos_encs_lib.compute_attention_with_relative_encodings(
           q, k, self._positional_encodings_params.max_time, causal=causal
       )
-    elif self._positional_encodings == pos_encs_lib.PositionalEncodings.ROTARY:
-      q = pos_encs_lib.apply_rotary_encoding(
-          q, position=jnp.arange(q.shape[1])[None, :]
-      )
-      k = pos_encs_lib.apply_rotary_encoding(
-          k, position=jnp.arange(k.shape[1])[None, :]
-      )
+    else:
+      if self._positional_encodings == pos_encs_lib.PositionalEncodings.ROTARY:
+        q = pos_encs_lib.apply_rotary_encoding(
+            q, position=jnp.arange(q.shape[1])[None, :]
+        )
+        k = pos_encs_lib.apply_rotary_encoding(
+            k, position=jnp.arange(k.shape[1])[None, :]
+        )
       attention = jnp.einsum('bthd,bThd->bhtT', q, k)
-    attention *= 1. / jnp.sqrt(self._num_hiddens_per_head)
+    attention *= 1.0 / jnp.sqrt(self._num_hiddens_per_head)
 
     # ALiBi encodings are not scaled with the 1 / sqrt(d_k) factor.
     if self._positional_encodings == pos_encs_lib.PositionalEncodings.ALIBI:
