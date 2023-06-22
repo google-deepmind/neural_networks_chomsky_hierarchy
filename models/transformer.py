@@ -15,6 +15,7 @@
 
 """Transformer model."""
 
+import dataclasses
 from typing import Callable, Optional
 
 import chex
@@ -51,14 +52,14 @@ class TransformerConfig:
   # The size of the sliding attention window. See MultiHeadDotProductAttention.
   attention_window: Optional[int] = None
   # The positional encoding used with default sin/cos (Vaswani et al., 2017).
-  positional_encodings: pos_encs_lib.PositionalEncodings = (
-      pos_encs_lib.PositionalEncodings.SIN_COS
+  positional_encodings: pos_encs_lib.PositionalEncodings = dataclasses.field(
+      default_factory=lambda: pos_encs_lib.PositionalEncodings.SIN_COS
   )
   # The maximum size of the context (used by the posiitonal encodings).
   max_time: int = 10_000
   # The parameters for the positional encodings, default sin/cos.
   positional_encodings_params: pos_encs_lib.PositionalEncodingsParams = (
-      pos_encs_lib.SinCosParams()
+      dataclasses.field(default_factory=pos_encs_lib.SinCosParams)
   )
   # How much larger the hidden layer of the feedforward network should be
   # compared to the `embedding_dim`.
