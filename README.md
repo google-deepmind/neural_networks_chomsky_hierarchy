@@ -89,7 +89,7 @@ Please see the [JAX documentation](https://github.com/google/jax#installation) f
 Before running any code, make sure to activate the conda environment and set the `PYTHONPATH`:
 ```bash
 conda activate nnch
-export PYTHONPATH=$(pwd)
+export PYTHONPATH=$(pwd)/..
 ```
 
 We provide an example of a training and evaluation run at:
