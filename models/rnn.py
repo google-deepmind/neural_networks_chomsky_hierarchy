@@ -45,7 +45,7 @@ def make_rnn(
     **rnn_kwargs: Kwargs to be passed to the RNN core.
   """
 
-  def rnn_model(x: jnp.array, input_length: int = 1) -> jnp.ndarray:
+  def rnn_model(x: jnp.ndarray, input_length: int = 1) -> jnp.ndarray:
     core = rnn_core(**rnn_kwargs)
     if issubclass(rnn_core, tape_rnn.TapeRNNCore):
       initial_state = core.initial_state(x.shape[0], input_length)  # pytype: disable=wrong-arg-count
