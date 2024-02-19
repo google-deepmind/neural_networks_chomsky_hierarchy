@@ -1,7 +1,7 @@
 # Neural Networks and the Chomsky Hierarchy
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/deepmind/neural_networks_chomsky_hierarchy/master/chomsky.svg" alt="Overview figure"/>
+  <img src="https://raw.githubusercontent.com/google-deepmind/neural_networks_chomsky_hierarchy/master/chomsky.svg" alt="Overview figure"/>
 </p>
 
 This repository provides an implementation of our ICLR 2023 paper [Neural Networks and the Chomsky Hierarchy](https://arxiv.org/abs/2207.02098).
@@ -56,7 +56,7 @@ We use [optax](https://github.com/deepmind/optax) for our optimizers.
 
 Clone the source code into a local directory:
 ```bash
-git clone https://github.com/deepmind/neural_networks_chomsky_hierarchy.git
+git clone https://github.com/google-deepmind/neural_networks_chomsky_hierarchy.git
 cd neural_networks_chomsky_hierarchy
 ```
 
