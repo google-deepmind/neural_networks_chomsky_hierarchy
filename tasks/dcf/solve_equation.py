@@ -29,7 +29,8 @@ from neural_networks_chomsky_hierarchy.tasks.dcf import modular_arithmetic_brack
 
 
 def generate_equation_and_solution(
-    modulus: int, length: int, mult: bool = False
+    modulus: int,
+    length: int,
 ) -> tuple[str, int]:
   """Returns a modular arithmetic equation with brackets, and its solution.
 
@@ -41,7 +42,6 @@ def generate_equation_and_solution(
   Args:
     modulus: The modulus to use for the expression.
     length: The length of the expression.
-    mult: Whether to include the multiplication operator in the expressions.
 
   Raises:
     ValueError if the length is < 3.
@@ -49,7 +49,13 @@ def generate_equation_and_solution(
 
   # Generate the expression.
   expr, val = mab.generate_one_expression_and_result(
-      modulus, length - 2, mult=mult)
+      modulus,
+      length - 2,
+      # We use mult=False by default here, otherwise equations could have
+      # multiple solutions if the variable 'x' or some expression containing the
+      # variable is multiplied by 0.
+      mult=False,
+  )
 
   # Replace random digit with 'x'.
   idx = np.random.randint(low=0, high=len(expr))
@@ -65,7 +71,6 @@ def generate_raw_dataset(
     n: int,
     lengths: Sequence[int],
     modulus: int,
-    mult: bool = False,
     with_tqdm: bool = False,
 ) -> dict[int, dict[str, np.ndarray]]:
   """Generates a dataset of equations and their solutions.
@@ -75,7 +80,6 @@ def generate_raw_dataset(
     lengths: The lengths of the sequences to generate. n is evenly distributed
       over these lengths.
     modulus: Modulus used to compute the expressions.
-    mult: Whether to include the multiplication operator in the expressions.
     with_tqdm: As the computation might be long, whether to add a tqdm progress
       bar or not.
 
@@ -101,7 +105,7 @@ def generate_raw_dataset(
   range_lengths = tqdm.tqdm(lengths) if with_tqdm else lengths
   for length in range_lengths:
     for _ in range(n // len(lengths)):
-      seq, label = generate_equation_and_solution(modulus, length, mult=mult)
+      seq, label = generate_equation_and_solution(modulus, length)
       seq = [alphabet_to_int[x] for x in seq]
       sequences[length]['equations'].append(seq)
       sequences[length]['solutions'].append(label)
@@ -115,14 +119,22 @@ def generate_raw_dataset(
 
 
 class SolveEquation(task.GeneralizationTask):
-  """A task with the goal of solving an modular equation for an unknown."""
+  """A task with the goal of solving an modular equation for an unknown.
+
+  Note that the equations do not contain any multiplication as it could lead to
+  multiple solutions (multiplication by zero).
+  """
 
   def __init__(self, modulus: int, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._modulus = modulus
 
-  def sample_batch(self, rng: jnp.ndarray, batch_size: int,
-                   length: int) -> task.Batch:
+  def sample_batch(
+      self,
+      rng: jnp.ndarray,
+      batch_size: int,
+      length: int,
+  ) -> task.Batch:
     """Returns a batch of inputs/outputs."""
     if length < 3:
       return {
@@ -134,7 +146,10 @@ class SolveEquation(task.GeneralizationTask):
                   jnp.zeros((batch_size,)), num_classes=self.output_size)
       }
     batch = generate_raw_dataset(
-        batch_size, lengths=[length], modulus=self._modulus)[length]
+        batch_size,
+        lengths=[length],
+        modulus=self._modulus,
+    )[length]
     inputs = jnn.one_hot(batch['equations'], self.input_size)
     output = jnn.one_hot(batch['solutions'], self.output_size)
     return {'input': inputs, 'output': output}
