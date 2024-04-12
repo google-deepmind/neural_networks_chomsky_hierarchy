@@ -40,11 +40,11 @@ class OddsFirst(task.GeneralizationTask):
   Note that the sampling is jittable so this task is fast.
   """
 
-  def __init__(self, vocab_size: int, *args, **kwargs):
+  def __init__(self, *args, vocab_size: int = 2, **kwargs):
     """Initializes the odds_first task.
 
     Args:
-      vocab_size: The size of the alphabet.
+      vocab_size: The size of the alphabet. We use 2 in the paper.
       *args: Args for the base task class.
       **kwargs: Kwargs for the base task class.
     """

@@ -43,7 +43,7 @@ class BucketSort(task.GeneralizationTask):
 
     Args:
       *args: The args for the base task class.
-      vocab_size: The size of the alphabet.
+      vocab_size: The size of the alphabet. We use 5 in the paper.
       **kwargs: The kwargs for the base task class.
     """
     super().__init__(*args, **kwargs)

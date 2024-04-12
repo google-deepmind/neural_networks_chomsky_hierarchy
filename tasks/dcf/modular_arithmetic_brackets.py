@@ -143,7 +143,15 @@ def generate_raw_dataset(
 class ModularArithmeticBrackets(task.GeneralizationTask):
   """A task with the goal of reducing an arithmetic expression with brackets."""
 
-  def __init__(self, modulus: int, *args, mult: bool = False, **kwargs):
+  def __init__(self, *args, modulus: int = 5, mult: bool = False, **kwargs):
+    """Initializes the modular arithmetic task.
+
+    Args:
+      *args: Args for the base task class.
+      modulus: The modulus used for the computation. We use 5 in the paper.
+      mult: Whether to add multiplication or use only '+' and '-'.
+      **kwargs: Kwargs for the base task class.
+    """
     super().__init__(*args, **kwargs)
     self._modulus = modulus
     self._mult = mult

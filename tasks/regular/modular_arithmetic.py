@@ -133,15 +133,15 @@ class ModularArithmetic(task.GeneralizationTask):
   """
 
   def __init__(self,
-               modulus: int,
                *args,
+               modulus: int = 5,
                operators: Optional[Sequence[str]] = None,
                **kwargs):
     """Initializes the modular arithmetic task.
 
     Args:
-      modulus: The modulus used for the computation.
       *args: Args for the base task class.
+      modulus: The modulus used for the computation. We use 5 in the paper.
       operators: Operators to be used in the sequences. By default it's None,
         meaning all operators available are used.
       **kwargs: Kwargs for the base task class.
