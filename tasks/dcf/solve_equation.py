@@ -125,15 +125,12 @@ class SolveEquation(task.GeneralizationTask):
   multiple solutions (multiplication by zero).
   """
 
-  def __init__(self, *args, modulus: int = 5, **kwargs):
+  def __init__(self, modulus: int = 5) -> None:
     """Initializes the modular arithmetic task.
 
     Args:
-      *args: Args for the base task class.
       modulus: The modulus used for the computation. We use 5 in the paper.
-      **kwargs: Kwargs for the base task class.
     """
-    super().__init__(*args, **kwargs)
     self._modulus = modulus
 
   def sample_batch(

@@ -40,16 +40,12 @@ class DuplicateString(task.GeneralizationTask):
   Note that the sampling is jittable so this task is fast.
   """
 
-  def __init__(self, *args, vocab_size: int = 2, **kwargs):
+  def __init__(self, vocab_size: int = 2) -> None:
     """Initializes the remember_string task.
 
     Args:
       vocab_size: The size of the alphabet. We use 2 in the paper.
-      *args: Args for the base task class.
-      **kwargs: Kwargs for the base task class.
     """
-    super().__init__(*args, **kwargs)
-
     self._vocab_size = vocab_size
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))

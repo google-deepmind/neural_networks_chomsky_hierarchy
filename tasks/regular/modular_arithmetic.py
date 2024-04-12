@@ -132,22 +132,18 @@ class ModularArithmetic(task.GeneralizationTask):
   Note that the input strings are always of odd length.
   """
 
-  def __init__(self,
-               *args,
-               modulus: int = 5,
-               operators: Optional[Sequence[str]] = None,
-               **kwargs):
+  def __init__(
+    self,
+    modulus: int = 5,
+     operators: Optional[Sequence[str]] = None,
+  ) -> None:
     """Initializes the modular arithmetic task.
 
     Args:
-      *args: Args for the base task class.
       modulus: The modulus used for the computation. We use 5 in the paper.
       operators: Operators to be used in the sequences. By default it's None,
         meaning all operators available are used.
-      **kwargs: Kwargs for the base task class.
     """
-    super().__init__(*args, **kwargs)
-
     self._modulus = modulus
     if operators is None:
       operators = ('+', '*', '-')

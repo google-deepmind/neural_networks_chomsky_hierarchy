@@ -38,15 +38,12 @@ class BucketSort(task.GeneralizationTask):
     1110001   ->  0001111   (with `vocab_size = 2`)
   """
 
-  def __init__(self, *args, vocab_size: int = 5, **kwargs) -> None:
+  def __init__(self, vocab_size: int = 5) -> None:
     """Initializes the task.
 
     Args:
-      *args: The args for the base task class.
       vocab_size: The size of the alphabet. We use 5 in the paper.
-      **kwargs: The kwargs for the base task class.
     """
-    super().__init__(*args, **kwargs)
     self._vocab_size = vocab_size
 
   @functools.partial(jax.jit, static_argnums=(0, 2, 3))
